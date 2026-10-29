@@ -27,6 +27,17 @@ parental controls, and every other authorization decision.
 - **.NET 10 SDK** to build
 - An OIDC provider. Authentik is the primary documented target.
 
+## Install from the plugin repository
+
+In Jellyfin, open **Dashboard → Plugins → Repositories**, add:
+
+```text
+https://raw.githubusercontent.com/lolerskatez/jellyfin-plugin-sso/main/manifest.json
+```
+
+Then install **Single Sign-On** from the plugin catalog. The repository is
+updated automatically when a GitHub release is published.
+
 ## Build
 
 ```powershell
