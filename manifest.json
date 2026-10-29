@@ -1,1 +1,21 @@
-[]
+[
+    {
+        "guid": "a286a3f9-cfcc-40f9-ac28-f4d98a3172ae",
+        "name": "Single Sign-On",
+        "description": "Single Sign-On adds an OIDC login button to Jellyfin Web, provisions normal\nJellyfin users and device sessions, and lets existing users explicitly link\ntheir Jellyfin account to an external identity. Playback, libraries, and all\nother Jellyfin authorization continue to use Jellyfin's native user policy.\n",
+        "overview": "OpenID Connect login, automatic user provisioning, and account linking for Jellyfin.",
+        "owner": "lolerskatez",
+        "category": "Authentication",
+        "versions": [
+            {
+                "version": "0.1.0.0",
+                "changelog": "0.1.0.0: Initial OIDC implementation with Authentik-oriented configuration,\nautomatic login-page injection, auto-provisioning, explicit account linking,\npending approvals, role mapping, audit log, and Quick Connect helper.\n",
+                "targetAbi": "12.0.0.0",
+                "sourceUrl": "https://github.com/lolerskatez/jellyfin-plugin-sso/releases/download/v0.1.0.0/single-sign-on_0.1.0.0.zip",
+                "checksum": "a011c0bec3c60f22bc4f6d369677154a",
+                "timestamp": "2026-10-29T08:06:23Z"
+            }
+        ],
+        "imageUrl": ""
+    }
+]
