@@ -1,0 +1,22 @@
+services:
+  mock-oidc:
+    build:
+      context: ../..
+      dockerfile: tests/MockOidcServer/Dockerfile
+    ports:
+      - "19090:19090"
+
+  jellyfin:
+    image: jellyfin/jellyfin:12.4
+    ports:
+      - "18096:8096"
+    environment:
+      JELLYFIN_PublishedServerUrl: "http://localhost:18096"
+    volumes:
+      - ./jellyfin/config:/config
+      - ./jellyfin/cache:/cache
+      - ../../src/Jellyfin.Plugin.SSO/bin/Release/net10.0:/config/plugins/Jellyfin.Plugin.SSO
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mock-oidc

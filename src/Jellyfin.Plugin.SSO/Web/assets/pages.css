@@ -1,0 +1,179 @@
+:root {
+    color-scheme: dark light;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    background: #101010;
+    color: rgba(255, 255, 255, 0.87);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.ssoCard {
+    width: min(34rem, 100%);
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.6rem;
+    padding: 2rem;
+    box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.35);
+}
+
+.ssoCard h1 {
+    font-size: 1.45rem;
+    margin: 0 0 0.6rem;
+}
+
+.ssoCard p {
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.ssoCard .ssoError {
+    color: #ff9b9b;
+}
+
+.ssoCard .ssoSuccess {
+    color: #8ee6a8;
+}
+
+.ssoField {
+    display: block;
+    margin: 1rem 0;
+}
+
+.ssoField span {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.ssoField input {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    font-size: 1rem;
+    color: inherit;
+    background: #101010;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 0.35rem;
+}
+
+.ssoButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.6rem;
+    padding: 0.55rem 1rem;
+    margin: 0.35rem 0.35rem 0.35rem 0;
+    font-size: 1rem;
+    color: #101010;
+    background: #4cc2ff;
+    border: 0;
+    border-radius: 0.35rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.ssoButton:hover {
+    background: #7ad4ff;
+}
+
+.ssoButton.secondary {
+    color: inherit;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.ssoButton.danger {
+    color: #ffd0d0;
+    background: transparent;
+    border: 1px solid rgba(255, 120, 120, 0.55);
+}
+
+.ssoActions {
+    margin-top: 1.2rem;
+}
+
+.ssoLinks {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.ssoLinks li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ssoLinks li:last-child {
+    border-bottom: 0;
+}
+
+.ssoMuted {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.9rem;
+}
+
+.ssoSpinner {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin: 0.3rem 0 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.18);
+    border-top-color: #4cc2ff;
+    border-radius: 50%;
+    animation: sso-spin 0.9s linear infinite;
+}
+
+@keyframes sso-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    body {
+        background: #f3f3f3;
+        color: rgba(0, 0, 0, 0.87);
+    }
+
+    .ssoCard {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.12);
+    }
+
+    .ssoCard p,
+    .ssoField span,
+    .ssoMuted {
+        color: rgba(0, 0, 0, 0.62);
+    }
+
+    .ssoField input {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .ssoButton.secondary {
+        border-color: rgba(0, 0, 0, 0.22);
+    }
+
+    .ssoLinks li {
+        border-bottom-color: rgba(0, 0, 0, 0.1);
+    }
+}

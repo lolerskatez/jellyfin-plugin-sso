@@ -1,0 +1,7 @@
+.git
+.vs
+.idea
+**/bin
+**/obj
+.tmp
+tests/e2e/jellyfin

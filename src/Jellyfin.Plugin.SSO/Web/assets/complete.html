@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer">
+    <meta name="sso-base" content="{{PATH_BASE}}">
+    <title>Signing in — Jellyfin</title>
+    <link rel="stylesheet" href="{{ASSET_BASE}}/pages.css">
+</head>
+<body>
+    <main class="ssoCard" role="main">
+        <h1 id="sso-title">Signing you in…</h1>
+        <div id="sso-spinner" class="ssoSpinner" aria-hidden="true"></div>
+        <p id="sso-message">Completing authentication with Jellyfin.</p>
+        <p id="sso-detail" class="ssoMuted"></p>
+        <div id="sso-actions" class="ssoActions" hidden>
+            <a id="sso-back" class="ssoButton" href="{{PATH_BASE}}/web/index.html#/login">Return to login</a>
+        </div>
+    </main>
+    <script src="{{ASSET_BASE}}/complete.js" defer></script>
+</body>
+</html>

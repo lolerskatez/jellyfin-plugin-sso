@@ -1,0 +1,25 @@
+name: "Single Sign-On"
+guid: "a286a3f9-cfcc-40f9-ac28-f4d98a3172ae"
+version: "0.1.0.0"
+targetAbi: "12.0.0.0"
+framework: "net10.0"
+owner: "Jellyfin SSO contributors"
+overview: "OpenID Connect login, automatic user provisioning, and account linking for Jellyfin."
+description: |
+  Single Sign-On adds an OIDC login button to Jellyfin Web, provisions normal
+  Jellyfin users and device sessions, and lets existing users explicitly link
+  their Jellyfin account to an external identity. Playback, libraries, and all
+  other Jellyfin authorization continue to use Jellyfin's native user policy.
+category: "Authentication"
+imageUrl: ""
+changelog: |
+  0.1.0.0: Initial OIDC implementation with Authentik-oriented configuration,
+  automatic login-page injection, auto-provisioning, explicit account linking,
+  pending approvals, role mapping, audit log, and Quick Connect helper.
+artifacts:
+  - "Jellyfin.Plugin.SSO.dll"
+  - "Microsoft.Bcl.Cryptography.dll"
+  - "Microsoft.IdentityModel.Abstractions.dll"
+  - "Microsoft.IdentityModel.JsonWebTokens.dll"
+  - "Microsoft.IdentityModel.Logging.dll"
+  - "Microsoft.IdentityModel.Tokens.dll"

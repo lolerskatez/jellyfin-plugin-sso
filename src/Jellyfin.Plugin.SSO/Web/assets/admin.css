@@ -1,0 +1,286 @@
+.sso-admin-page {
+    margin: 0;
+    padding: 1.25rem;
+    color: inherit;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: transparent;
+}
+
+.sso-admin-page * {
+    box-sizing: border-box;
+}
+
+.ssoAdminHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ssoAdminHeader h1 {
+    margin: 0;
+    font-size: 1.45rem;
+}
+
+.ssoAdminHeader p {
+    margin: 0.25rem 0 0;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.ssoTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 1rem;
+}
+
+.ssoTab {
+    padding: 0.55rem 0.8rem;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.ssoTab.active {
+    border-bottom-color: #4cc2ff;
+    color: #4cc2ff;
+}
+
+.ssoPanel {
+    display: none;
+}
+
+.ssoPanel.active {
+    display: block;
+}
+
+.ssoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0.75rem;
+}
+
+.ssoBox {
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.45rem;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.ssoBox h2,
+.ssoBox h3 {
+    margin-top: 0;
+}
+
+.ssoStat {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ssoStat:last-child {
+    border-bottom: 0;
+}
+
+.ssoStat strong {
+    font-weight: 600;
+}
+
+.ssoBadge {
+    display: inline-block;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    background: rgba(76, 194, 255, 0.18);
+    color: #74d1ff;
+}
+
+.ssoBadge.off {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.ssoForm {
+    display: grid;
+    gap: 0.7rem;
+    max-width: 52rem;
+}
+
+.ssoFormRow {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.ssoFormRow label {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.ssoFormRow input,
+.ssoFormRow select,
+.ssoFormRow textarea {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    color: inherit;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.3rem;
+    font-size: 0.95rem;
+}
+
+.ssoFormRow textarea,
+.ssoBox textarea {
+    width: 100%;
+    min-height: 4.5rem;
+    padding: 0.55rem 0.65rem;
+    color: inherit;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.3rem;
+    font-size: 0.85rem;
+    resize: vertical;
+}
+
+.ssoCheck {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.92rem;
+}
+
+.ssoCheck input {
+    width: auto;
+}
+
+.ssoFormActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.ssoBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.8rem;
+    color: #101010;
+    background: #4cc2ff;
+    border: 0;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.ssoBtn.secondary {
+    color: inherit;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.ssoBtn.danger {
+    color: #ffbcbc;
+    background: transparent;
+    border: 1px solid rgba(255, 120, 120, 0.5);
+}
+
+.ssoBtn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.ssoNotice {
+    padding: 0.65rem 0.8rem;
+    margin: 0.5rem 0 1rem;
+    border: 1px solid rgba(76, 194, 255, 0.35);
+    border-radius: 0.3rem;
+    background: rgba(76, 194, 255, 0.08);
+    white-space: pre-wrap;
+}
+
+.ssoNotice.error {
+    border-color: rgba(255, 120, 120, 0.45);
+    background: rgba(255, 120, 120, 0.08);
+    color: #ffbaba;
+}
+
+.ssoNotice.success {
+    border-color: rgba(100, 220, 130, 0.45);
+    background: rgba(100, 220, 130, 0.08);
+    color: #a7efb8;
+}
+
+.ssoTableWrap {
+    overflow-x: auto;
+}
+
+.ssoTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.ssoTable th,
+.ssoTable td {
+    padding: 0.55rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    vertical-align: top;
+}
+
+.ssoTable th {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.ssoMuted {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
+}
+
+.ssoLoading {
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@media (prefers-color-scheme: light) {
+    .ssoAdminHeader p,
+    .ssoFormRow label,
+    .ssoMuted,
+    .ssoTable th {
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    .ssoTabs {
+        border-bottom-color: rgba(0, 0, 0, 0.12);
+    }
+
+    .ssoBox {
+        border-color: rgba(0, 0, 0, 0.12);
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .ssoStat {
+        border-bottom-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .ssoFormRow input,
+    .ssoFormRow select,
+    .ssoFormRow textarea {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .ssoTable th,
+    .ssoTable td {
+        border-bottom-color: rgba(0, 0, 0, 0.08);
+    }
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer">
+    <meta name="sso-base" content="{{PATH_BASE}}">
+    <title>Quick Connect — Jellyfin</title>
+    <link rel="stylesheet" href="{{ASSET_BASE}}/pages.css">
+</head>
+<body>
+    <main class="ssoCard" role="main">
+        <h1>Quick Connect</h1>
+        <p id="sso-status" class="ssoMuted" hidden></p>
+        <p>Sign in here, then enter the code shown on your TV, phone, or other Jellyfin client. That client will receive a normal Jellyfin session.</p>
+        <div id="sso-provider-actions"></div>
+        <form id="sso-code-form" hidden>
+            <label class="ssoField">
+                <span>Code shown on your device</span>
+                <input id="sso-code" inputmode="numeric" autocomplete="one-time-code" required>
+            </label>
+            <button class="ssoButton" type="submit">Authorize device</button>
+        </form>
+        <div class="ssoActions">
+            <a class="ssoButton secondary" href="{{PATH_BASE}}/web/index.html#/home">Back to Jellyfin</a>
+            <a class="ssoButton secondary" href="{{PATH_BASE}}/sso/link">Linked accounts</a>
+        </div>
+    </main>
+    <script src="{{ASSET_BASE}}/quickconnect.js" defer></script>
+</body>
+</html>

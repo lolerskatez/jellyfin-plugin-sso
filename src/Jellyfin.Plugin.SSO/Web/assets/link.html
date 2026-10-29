@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer">
+    <meta name="sso-base" content="{{PATH_BASE}}">
+    <title>Linked accounts — Jellyfin</title>
+    <link rel="stylesheet" href="{{ASSET_BASE}}/pages.css">
+</head>
+<body>
+    <main class="ssoCard" role="main">
+        <h1>Linked accounts</h1>
+        <p id="sso-status" class="ssoMuted" hidden></p>
+        <p>A linked SSO account lets you sign in to Jellyfin without entering your Jellyfin password. Your library and playback permissions stay exactly the same.</p>
+        <div id="sso-links"></div>
+        <div id="sso-provider-actions"></div>
+        <p id="sso-signed-out" class="ssoMuted" hidden>
+            Sign in to Jellyfin first, then reload this page.
+        </p>
+        <div class="ssoActions">
+            <a class="ssoButton secondary" href="{{PATH_BASE}}/web/index.html#/home">Back to Jellyfin</a>
+            <a class="ssoButton secondary" href="{{PATH_BASE}}/sso/quickconnect">Quick Connect</a>
+        </div>
+    </main>
+    <script src="{{ASSET_BASE}}/link.js" defer></script>
+</body>
+</html>

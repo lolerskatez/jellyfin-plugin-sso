@@ -1,0 +1,14 @@
+bin/
+obj/
+artifacts/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+.tmp/
+TestResults/
+playwright-report/
+test-results/
+node_modules/
+tests/e2e/jellyfin/
