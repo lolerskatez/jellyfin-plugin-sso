@@ -55,7 +55,7 @@ internal static class OidcHttp
                 throw new OidcException("The identity provider response was too large.");
             }
 
-            limited.Write(buffer, 0, read);
+            await limited.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
         }
 
         return Encoding.UTF8.GetString(limited.ToArray());

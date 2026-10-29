@@ -97,7 +97,7 @@ public sealed class OidcProvider
             query["code_challenge_method"] = "S256";
         }
 
-        var separator = discovery.AuthorizationEndpoint.Contains('?') ? '&' : '?';
+        var separator = discovery.AuthorizationEndpoint.Contains('?', StringComparison.Ordinal) ? '&' : '?';
         return discovery.AuthorizationEndpoint + separator
             + string.Join('&', query.Select(pair => $"{Uri.EscapeDataString(pair.Key)}={Uri.EscapeDataString(pair.Value)}"));
     }

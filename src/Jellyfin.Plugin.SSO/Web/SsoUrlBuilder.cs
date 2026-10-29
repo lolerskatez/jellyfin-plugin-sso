@@ -67,7 +67,7 @@ public static class SsoUrlBuilder
 
         if (!decoded.StartsWith('/')
             || decoded.StartsWith("//", StringComparison.Ordinal)
-            || decoded.Contains('\\')
+            || decoded.Contains('\\', StringComparison.Ordinal)
             || decoded.Any(char.IsControl))
         {
             return Default;

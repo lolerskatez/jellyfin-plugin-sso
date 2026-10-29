@@ -38,6 +38,23 @@ https://raw.githubusercontent.com/lolerskatez/jellyfin-plugin-sso/main/manifest.
 Then install **Single Sign-On** from the plugin catalog. The repository is
 updated automatically when a GitHub release is published.
 
+## Project conventions
+
+The solution follows the official
+[jellyfin/jellyfin-plugin-template](https://github.com/jellyfin/jellyfin-plugin-template)
+layout and conventions:
+
+- `BasePlugin<TConfiguration>` + `IHasWebPages`
+- `Jellyfin.Controller` / `Jellyfin.Model` references with `ExcludeAssets="runtime"`
+- Embedded configuration page
+- Version metadata in `Directory.Build.props`
+- Jellyfin `.editorconfig`, nullable, analyzers, and warnings-as-errors
+- `build.yaml` for JPRM packaging
+
+It targets `net10.0` and Jellyfin 12.x, rather than the template's older
+`net9.0`/10.11 defaults. Runtime IdentityModel assemblies are intentionally
+included in `build.yaml` because the plugin uses them directly.
+
 ## Build
 
 ```powershell

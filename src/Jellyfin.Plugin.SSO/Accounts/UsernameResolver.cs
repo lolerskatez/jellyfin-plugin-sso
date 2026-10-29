@@ -141,7 +141,7 @@ public sealed class UsernameResolver : IUsernameResolver
             return null;
         }
 
-        var at = email.IndexOf('@');
+        var at = email.IndexOf('@', StringComparison.Ordinal);
         return at > 0 ? email[..at] : email;
     }
 
