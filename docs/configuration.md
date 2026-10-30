@@ -114,6 +114,25 @@ If Authentik rejects the login with `invalid redirect_uri`, compare the value
 shown in **Single Sign-On → Providers** with the value saved in Authentik,
 character by character.
 
+### Accessing Jellyfin through a domain or reverse proxy
+
+If you open Jellyfin at `https://jellyfin.example.com` but the provider card
+shows `http://192.168.1.183:8096/...`, the plugin is still generating the LAN
+callback. That happens when **Public base URL override** is set to the LAN
+address, or when the reverse proxy does not forward the original host and
+scheme.
+
+Fix it in one of these ways:
+
+1. Set **Settings → Public base URL override** to the external URL, for example
+   `https://jellyfin.example.com`, and add the matching callback to Authentik.
+2. If users need both the LAN URL and the external URL, leave the override
+   blank, register **both** callback URLs in Authentik, and make sure the proxy
+   forwards `Host`, `X-Forwarded-Proto`, and `X-Forwarded-For`.
+
+The provider card always shows the exact callback the plugin will send. Use that
+value, not a value copied from an older example.
+
 ### Post-logout redirect URI (optional)
 
 If you want Authentik to return users to Jellyfin after an Authentik logout, add
@@ -329,7 +348,8 @@ Authentik cannot terminate a Jellyfin session directly.
 
 | Symptom | Check |
 |---|---|
-| `redirect_uri` mismatch | Copy the exact URI from the plugin's provider page. Check scheme, port, path base, and trailing slash. |
+| `redirect_uri` mismatch | Copy the exact URI from the plugin's provider page. Check scheme, port, path base, and trailing slash. If you use a domain but the card shows the LAN IP, set **Public base URL override**. |
+| Redirect URI error only on the domain | The plugin is sending the LAN callback. Set **Public base URL override** to the external URL, or register both callbacks and let the request host decide. |
 | Discovery fails | Jellyfin must reach the issuer over the network. `localhost` inside a container is not the host. Check DNS, TLS, and proxy rules. |
 | `issuer` mismatch | The discovery document's `iss` must equal the configured issuer. In Authentik it normally ends with `/`. |
 | Login button missing | Hard-refresh the web client. Check **Login page injection** on the status page. External web clients need the branding fallback from the Settings tab. |

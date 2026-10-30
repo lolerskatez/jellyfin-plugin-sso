@@ -161,7 +161,9 @@ an **Invalidation Flow** that includes the **User Logout** stage (for example
 ## Troubleshooting
 
 - **`redirect_uri` mismatch**: copy the exact URI from the provider page in
-  Jellyfin. Check reverse-proxy path base and scheme.
+  Jellyfin. Check reverse-proxy path base and scheme. If it works on the LAN but
+  fails on your domain, set **Settings → Public base URL override** to the
+  domain URL and add that callback to Authentik.
 - **Discovery fails**: check that the Jellyfin container can reach the
   Authentik issuer. `localhost` inside a container is not the host.
 - **Issuer mismatch**: use the issuer exactly as published by Authentik,
