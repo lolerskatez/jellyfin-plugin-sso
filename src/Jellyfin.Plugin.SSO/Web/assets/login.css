@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     gap: 0.75em;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--jf-palette-text-secondary, rgba(255, 255, 255, 0.65));
     font-size: 0.9em;
     margin: 0.4em 0 0.75em;
 }
@@ -16,7 +16,7 @@
 .ssoLoginSection .ssoLoginHeading::after {
     content: "";
     flex: 1;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid var(--jf-palette-divider, rgba(255, 255, 255, 0.2));
 }
 
 .ssoLoginSection .ssoProviderButton {
@@ -31,9 +31,9 @@
 .ssoLoginSection .ssoProviderChooser {
     width: 100%;
     min-height: 2.6em;
-    color: inherit;
+    color: var(--jf-palette-text-primary, inherit);
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--jf-palette-divider, rgba(255, 255, 255, 0.25));
     border-radius: 0.3em;
     padding: 0.4em 0.6em;
     font-size: 1em;
@@ -54,15 +54,4 @@
 
 .layout-tv .ssoLoginSection {
     display: none;
-}
-
-@media (prefers-color-scheme: light) {
-    .ssoLoginSection .ssoLoginHeading {
-        color: rgba(0, 0, 0, 0.55);
-    }
-
-    .ssoLoginSection .ssoLoginHeading::before,
-    .ssoLoginSection .ssoLoginHeading::after {
-        border-top-color: rgba(0, 0, 0, 0.2);
-    }
 }

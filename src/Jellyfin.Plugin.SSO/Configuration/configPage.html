@@ -18,13 +18,25 @@
         </div>
         <script type="text/javascript">
             (function () {
+                var version = Date.now();
+
+                var previousCss = document.getElementById('sso-admin-css');
+                if (previousCss) {
+                    previousCss.remove();
+                }
                 var stylesheet = document.createElement('link');
+                stylesheet.id = 'sso-admin-css';
                 stylesheet.rel = 'stylesheet';
-                stylesheet.href = '../sso/assets/admin.css';
+                stylesheet.href = '../sso/assets/admin.css?v=' + version;
                 document.head.appendChild(stylesheet);
 
+                var previousScript = document.getElementById('sso-admin-script');
+                if (previousScript) {
+                    previousScript.remove();
+                }
                 var script = document.createElement('script');
-                script.src = '../sso/assets/admin.js';
+                script.id = 'sso-admin-script';
+                script.src = '../sso/assets/admin.js?v=' + version;
                 document.head.appendChild(script);
             })();
         </script>

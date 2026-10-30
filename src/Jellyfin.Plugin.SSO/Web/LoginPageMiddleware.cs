@@ -68,8 +68,9 @@ public sealed class LoginPageMiddleware
         if (!html.Contains(Marker, StringComparison.Ordinal))
         {
             var assetBase = HtmlEncoder.Default.Encode(context.Request.PathBase.Add("/sso/assets").Value ?? "/sso/assets");
-            var css = $"    <link rel=\"stylesheet\" href=\"{assetBase}/login.css\">\n";
-            var script = $"    <script src=\"{assetBase}/login.js\" defer></script>\n";
+            var assetVersion = HtmlEncoder.Default.Encode(typeof(LoginPageMiddleware).Assembly.GetName().Version?.ToString() ?? "1");
+            var css = $"    <link rel=\"stylesheet\" href=\"{assetBase}/login.css?v={assetVersion}\">\n";
+            var script = $"    <script src=\"{assetBase}/login.js?v={assetVersion}\" defer></script>\n";
 
             if (html.Contains("</head>", StringComparison.OrdinalIgnoreCase))
             {

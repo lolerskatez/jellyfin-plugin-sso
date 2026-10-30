@@ -1,7 +1,25 @@
+/*
+ * Single Sign-On admin UI.
+ *
+ * Colors follow the Jellyfin 12 theme palette when the host exposes it, so the
+ * page stays readable in both light and dark themes. The fallbacks keep the
+ * same layout usable on hosts that do not provide those variables.
+ */
 .sso-admin-page {
+    --sso-text: var(--jf-palette-text-primary, #f4f1ff);
+    --sso-text-secondary: var(--jf-palette-text-secondary, rgba(244, 241, 255, 0.7));
+    --sso-surface: var(--jf-palette-background-paper, #1c1830);
+    --sso-border: var(--jf-palette-divider, rgba(255, 255, 255, 0.14));
+    --sso-accent: var(--jf-palette-primary-main, #4cc2ff);
+    --sso-accent-contrast: var(--jf-palette-primary-contrastText, #06121a);
+    --sso-input-bg: var(--jf-palette-FilledInput-bg, rgba(0, 0, 0, 0.2));
+    --sso-hover: var(--jf-palette-action-hover, rgba(255, 255, 255, 0.08));
+    --sso-danger: var(--jf-palette-error-main, #ff6b6b);
+    --sso-success: var(--jf-palette-success-main, #66bb6a);
+
     margin: 0;
     padding: 1.25rem;
-    color: inherit;
+    color: var(--sso-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: transparent;
 }
@@ -21,24 +39,25 @@
 .ssoAdminHeader h1 {
     margin: 0;
     font-size: 1.45rem;
+    color: var(--sso-text);
 }
 
 .ssoAdminHeader p {
     margin: 0.25rem 0 0;
-    color: rgba(255, 255, 255, 0.62);
+    color: var(--sso-text-secondary);
 }
 
 .ssoTabs {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid var(--sso-border);
     margin-bottom: 1rem;
 }
 
 .ssoTab {
     padding: 0.55rem 0.8rem;
-    color: inherit;
+    color: var(--sso-text-secondary);
     background: transparent;
     border: 0;
     border-bottom: 2px solid transparent;
@@ -46,9 +65,13 @@
     font-size: 0.95rem;
 }
 
+.ssoTab:hover {
+    color: var(--sso-text);
+}
+
 .ssoTab.active {
-    border-bottom-color: #4cc2ff;
-    color: #4cc2ff;
+    border-bottom-color: var(--sso-accent);
+    color: var(--sso-accent);
 }
 
 .ssoPanel {
@@ -67,14 +90,15 @@
 
 .ssoBox {
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--sso-border);
     border-radius: 0.45rem;
-    background: rgba(255, 255, 255, 0.025);
+    background: var(--sso-surface);
 }
 
 .ssoBox h2,
 .ssoBox h3 {
     margin-top: 0;
+    color: var(--sso-text);
 }
 
 .ssoStat {
@@ -82,15 +106,20 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid var(--sso-border);
 }
 
 .ssoStat:last-child {
     border-bottom: 0;
 }
 
+.ssoStat span {
+    color: var(--sso-text-secondary);
+}
+
 .ssoStat strong {
     font-weight: 600;
+    color: var(--sso-text);
 }
 
 .ssoBadge {
@@ -98,13 +127,17 @@
     padding: 0.12rem 0.45rem;
     border-radius: 999px;
     font-size: 0.78rem;
-    background: rgba(76, 194, 255, 0.18);
-    color: #74d1ff;
+    color: var(--sso-text);
+    background: rgba(76, 194, 255, 0.16);
+    background: color-mix(in srgb, var(--sso-accent) 16%, transparent);
+    border: 1px solid rgba(76, 194, 255, 0.4);
+    border-color: color-mix(in srgb, var(--sso-accent) 40%, transparent);
 }
 
 .ssoBadge.off {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--sso-text-secondary);
+    background: var(--sso-hover);
+    border-color: var(--sso-border);
 }
 
 .ssoForm {
@@ -120,7 +153,7 @@
 
 .ssoFormRow label {
     font-size: 0.88rem;
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--sso-text-secondary);
 }
 
 .ssoFormRow input,
@@ -128,11 +161,19 @@
 .ssoFormRow textarea {
     width: 100%;
     padding: 0.55rem 0.65rem;
-    color: inherit;
-    background: rgba(0, 0, 0, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--sso-text);
+    -webkit-text-fill-color: var(--sso-text);
+    background: var(--sso-input-bg);
+    border: 1px solid var(--sso-border);
     border-radius: 0.3rem;
     font-size: 0.95rem;
+}
+
+.ssoFormRow input:focus,
+.ssoFormRow select:focus,
+.ssoFormRow textarea:focus {
+    outline: none;
+    border-color: var(--sso-accent);
 }
 
 .ssoFormRow textarea,
@@ -140,24 +181,39 @@
     width: 100%;
     min-height: 4.5rem;
     padding: 0.55rem 0.65rem;
-    color: inherit;
-    background: rgba(0, 0, 0, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--sso-text);
+    -webkit-text-fill-color: var(--sso-text);
+    background: var(--sso-input-bg);
+    border: 1px solid var(--sso-border);
     border-radius: 0.3rem;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
     font-size: 0.85rem;
     resize: vertical;
+}
+
+.ssoFormRow select option {
+    background: var(--sso-surface);
+    color: var(--sso-text);
+}
+
+.ssoFormRow input::placeholder,
+.ssoFormRow textarea::placeholder {
+    color: var(--sso-text-secondary);
+    -webkit-text-fill-color: var(--sso-text-secondary);
+    opacity: 0.75;
 }
 
 .ssoCheck {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sso-text);
     font-size: 0.92rem;
 }
 
 .ssoCheck input {
     width: auto;
+    accent-color: var(--sso-accent);
 }
 
 .ssoFormActions {
@@ -172,24 +228,38 @@
     align-items: center;
     justify-content: center;
     padding: 0.45rem 0.8rem;
-    color: #101010;
-    background: #4cc2ff;
+    color: var(--sso-accent-contrast);
+    background: var(--sso-accent);
     border: 0;
     border-radius: 0.3rem;
     cursor: pointer;
     font-size: 0.9rem;
 }
 
+.ssoBtn:hover {
+    filter: brightness(1.1);
+}
+
 .ssoBtn.secondary {
-    color: inherit;
+    color: var(--sso-text);
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: 1px solid var(--sso-border);
+}
+
+.ssoBtn.secondary:hover {
+    background: var(--sso-hover);
+    filter: none;
 }
 
 .ssoBtn.danger {
-    color: #ffbcbc;
+    color: var(--sso-danger);
     background: transparent;
-    border: 1px solid rgba(255, 120, 120, 0.5);
+    border: 1px solid var(--sso-danger);
+}
+
+.ssoBtn.danger:hover {
+    background: var(--sso-hover);
+    filter: none;
 }
 
 .ssoBtn:disabled {
@@ -200,22 +270,29 @@
 .ssoNotice {
     padding: 0.65rem 0.8rem;
     margin: 0.5rem 0 1rem;
+    color: var(--sso-text);
     border: 1px solid rgba(76, 194, 255, 0.35);
+    border-color: color-mix(in srgb, var(--sso-accent) 35%, transparent);
     border-radius: 0.3rem;
     background: rgba(76, 194, 255, 0.08);
+    background: color-mix(in srgb, var(--sso-accent) 10%, transparent);
     white-space: pre-wrap;
 }
 
 .ssoNotice.error {
+    color: var(--sso-text);
     border-color: rgba(255, 120, 120, 0.45);
+    border-color: color-mix(in srgb, var(--sso-danger) 45%, transparent);
     background: rgba(255, 120, 120, 0.08);
-    color: #ffbaba;
+    background: color-mix(in srgb, var(--sso-danger) 10%, transparent);
 }
 
 .ssoNotice.success {
+    color: var(--sso-text);
     border-color: rgba(100, 220, 130, 0.45);
+    border-color: color-mix(in srgb, var(--sso-success) 45%, transparent);
     background: rgba(100, 220, 130, 0.08);
-    color: #a7efb8;
+    background: color-mix(in srgb, var(--sso-success) 10%, transparent);
 }
 
 .ssoTableWrap {
@@ -232,55 +309,25 @@
 .ssoTable td {
     padding: 0.55rem 0.5rem;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--sso-border);
     vertical-align: top;
 }
 
 .ssoTable th {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--sso-text-secondary);
     font-weight: 500;
 }
 
+.ssoTable td {
+    color: var(--sso-text);
+}
+
 .ssoMuted {
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--sso-text-secondary);
     font-size: 0.88rem;
 }
 
 .ssoLoading {
     padding: 2rem;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-@media (prefers-color-scheme: light) {
-    .ssoAdminHeader p,
-    .ssoFormRow label,
-    .ssoMuted,
-    .ssoTable th {
-        color: rgba(0, 0, 0, 0.6);
-    }
-
-    .ssoTabs {
-        border-bottom-color: rgba(0, 0, 0, 0.12);
-    }
-
-    .ssoBox {
-        border-color: rgba(0, 0, 0, 0.12);
-        background: rgba(0, 0, 0, 0.02);
-    }
-
-    .ssoStat {
-        border-bottom-color: rgba(0, 0, 0, 0.08);
-    }
-
-    .ssoFormRow input,
-    .ssoFormRow select,
-    .ssoFormRow textarea {
-        background: #ffffff;
-        border-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .ssoTable th,
-    .ssoTable td {
-        border-bottom-color: rgba(0, 0, 0, 0.08);
-    }
+    color: var(--sso-text-secondary);
 }
