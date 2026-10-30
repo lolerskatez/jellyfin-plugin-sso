@@ -251,6 +251,25 @@
         }
     }, true);
 
+    document.addEventListener('click', function (event) {
+        var cancel = event.target && event.target.closest ? event.target.closest('.btnCancel') : null;
+        if (!cancel || !localLoginRequested) {
+            return;
+        }
+
+        // Jellyfin's cancel handler runs on this click; restore the SSO-only
+        // view on the next tick so the form is hidden and the local-account
+        // button returns.
+        window.setTimeout(function () {
+            localLoginRequested = false;
+            var section = document.querySelector('.ssoLoginSection');
+            if (section) {
+                section.setAttribute('data-signature', '');
+            }
+            refresh();
+        }, 0);
+    }, false);
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', start);
     } else {
