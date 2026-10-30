@@ -1,6 +1,6 @@
 name: "Single Sign-On"
 guid: "a286a3f9-cfcc-40f9-ac28-f4d98a3172ae"
-version: "0.1.0.4"
+version: "0.1.0.5"
 targetAbi: "12.0.0.0"
 framework: "net10.0"
 owner: "lolerskatez"
@@ -13,6 +13,7 @@ description: |
 category: "Authentication"
 imageUrl: ""
 changelog: |
+  0.1.0.5: Make the local-account fallback a full login button, prefill the SSO-only break-glass allowlist with the current administrator, surface settings-save errors, and show SSO-only state on the status page.
   0.1.0.4: Add OIDC RP-initiated logout with a configurable post-logout redirect, intercept Jellyfin Web sign-out for SSO sessions, and fix the provider enabled badge spacing.
   0.1.0.3: Add SSO-only password policy, a provisioned-user flag, admin link creation, and a password-policy endpoint for trusted integrations; improve admin card spacing.
   0.1.0.2: Follow the Jellyfin theme palette so the settings and login UI stay readable in light and dark themes, and cache-bust static assets so updates apply immediately.

@@ -85,7 +85,8 @@
 
         var link = document.createElement('button');
         link.type = 'button';
-        link.className = 'ssoLocalAccountLink';
+        link.setAttribute('is', 'emby-button');
+        link.className = 'raised block emby-button ssoLocalAccountLink';
         link.textContent = 'Use a local account';
         link.addEventListener('click', function () {
             localLoginRequested = true;

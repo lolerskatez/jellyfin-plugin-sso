@@ -82,7 +82,8 @@ public sealed class SsoAdminController : ControllerBase
             LinkCount = links.Count,
             PendingCount = pending.Count,
             ApiVersion = 1,
-            SsoOnlyEnabled = config.SsoOnly.Enabled
+            SsoOnlyEnabled = config.SsoOnly.Enabled,
+            PasswordAllowlistCount = config.SsoOnly.PasswordLoginAllowedUserIds.Count
         };
     }
 
@@ -255,6 +256,17 @@ public sealed class SsoAdminController : ControllerBase
     public ActionResult<AdminSettingsDto> GetSettings()
     {
         var config = _config.Current;
+        var ssoOnly = ToAdminSsoOnly(config.SsoOnly);
+        if (ssoOnly.PasswordLoginAllowedUsers.Count == 0
+            && GetCurrentUserId() is Guid currentUserId)
+        {
+            var currentUser = _userManager.GetUserById(currentUserId);
+            if (currentUser is not null && currentUser.HasPermission(PermissionKind.IsAdministrator))
+            {
+                ssoOnly.PasswordLoginAllowedUsers.Add(currentUser.Username);
+            }
+        }
+
         return new AdminSettingsDto
         {
             PublicBaseUrl = config.PublicBaseUrl,
@@ -264,8 +276,14 @@ public sealed class SsoAdminController : ControllerBase
             Provisioning = config.Provisioning,
             Roles = config.Roles,
             LoginPage = config.LoginPage,
-            SsoOnly = ToAdminSsoOnly(config.SsoOnly)
+            SsoOnly = ssoOnly
         };
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        var value = User.FindFirst("Jellyfin-UserId")?.Value;
+        return Guid.TryParse(value, out var id) ? id : null;
     }
 
     /// <summary>

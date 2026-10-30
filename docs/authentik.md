@@ -152,7 +152,7 @@ unavailable.
 - API-key password verification remains allowed by default so management apps
   can verify credentials while linking.
 - The web login page hides the local form and offers a “Use a local account”
-  link when configured.
+  button when configured.
 
 ## 8. Logout
 

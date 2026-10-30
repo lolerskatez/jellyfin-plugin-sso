@@ -208,6 +208,8 @@
             stat('Plugin', get(status, 'pluginVersion')),
             stat('Public base URL', get(status, 'publicBaseUrl')),
             stat('Login page injection', get(status, 'injectionEnabled') ? 'Enabled' : 'Disabled'),
+            stat('SSO-only login', get(status, 'ssoOnlyEnabled') ? 'Enabled' : 'Disabled'),
+            stat('Password allowlist', String(get(status, 'passwordAllowlistCount'))),
             stat('Enabled providers', String(get(status, 'enabledProviders'))),
             stat('Linked identities', String(get(status, 'linkCount'))),
             stat('Pending requests', String(get(status, 'pendingCount')))
@@ -545,6 +547,10 @@
         var showLocalLink = checkbox('Show a “Use a local account” link', get(ssoOnly, 'showLocalAccountLink') !== false);
         var allowedUsers = input((get(ssoOnly, 'passwordLoginAllowedUsers') || []).join(', '));
         allowedUsers.placeholder = 'admin, another-local-user';
+        var allowedUsersHelp = el('div', {
+            className: 'ssoMuted ssoFieldHelp',
+            text: 'Required to enable SSO-only login. Use an existing Jellyfin administrator; this is the break-glass account.'
+        });
         var ssoOnlyHeading = el('h3', { className: 'ssoFormSection', text: 'SSO-only login' });
 
         var form = el('form', { className: 'ssoForm' });
@@ -575,7 +581,8 @@
             allowApiKey,
             hideLocal,
             showLocalLink,
-            field('Password login allowed for these users (comma separated)', allowedUsers)
+            field('Password login allowed for these users (comma separated)', allowedUsers),
+            allowedUsersHelp
         ].forEach(function (node) { form.appendChild(node); });
 
         var save = el('button', { className: 'ssoBtn', text: 'Save settings' });
@@ -584,6 +591,14 @@
 
         form.addEventListener('submit', function (event) {
             event.preventDefault();
+            var allowedList = split(allowedUsers.value);
+            if (ssoOnlyEnabled.querySelector('input').checked && allowedList.length === 0) {
+                showNotice('Add at least one existing Jellyfin administrator to the password-login allowlist before enabling SSO-only login.', 'error');
+                window.scrollTo(0, 0);
+                allowedUsers.focus({ preventScroll: true });
+                return;
+            }
+
             var body = {
                 publicBaseUrl: publicBaseUrl.value.trim(),
                 requireHttps: requireHttps.querySelector('input').checked,
@@ -626,13 +641,21 @@
                     allowApiKeyPasswordVerification: allowApiKey.querySelector('input').checked,
                     hideLocalLogin: hideLocal.querySelector('input').checked,
                     showLocalAccountLink: showLocalLink.querySelector('input').checked,
-                    passwordLoginAllowedUsers: split(allowedUsers.value)
+                    passwordLoginAllowedUsers: allowedList
                 }
             };
 
             api('/sso/admin/settings', { method: 'PUT', body: JSON.stringify(body) })
-                .then(function () { showNotice('Settings saved.', 'success'); return loadSettings(); })
-                .catch(function (error) { showNotice(error.message, 'error'); });
+                .then(function () {
+                    showNotice('Settings saved.', 'success');
+                    window.scrollTo(0, 0);
+                    return loadSettings();
+                })
+                .catch(function (error) {
+                    showNotice(error.message, 'error');
+                    window.scrollTo(0, 0);
+                    return loadSettings();
+                });
         });
 
         panel.appendChild(el('div', { className: 'ssoBox' }, [el('h2', { text: 'Global settings' }), form]));

@@ -524,6 +524,11 @@ public sealed class AdminStatusDto
     /// Gets or sets a value indicating whether SSO-only login is enabled.
     /// </summary>
     public bool SsoOnlyEnabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of users allowed to use password login.
+    /// </summary>
+    public int PasswordAllowlistCount { get; set; }
 }
 
 /// <summary>

@@ -139,6 +139,11 @@
     color: var(--sso-text);
 }
 
+.ssoFieldHelp {
+    margin: -0.15rem 0 0;
+    font-size: 0.82rem;
+}
+
 .ssoStat {
     display: flex;
     justify-content: space-between;

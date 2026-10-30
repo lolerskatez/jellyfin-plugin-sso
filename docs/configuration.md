@@ -310,7 +310,7 @@ Open **Single Sign-On → Settings → SSO-only login**:
 | Also block linked local users | Optional strict mode. Users who linked an existing account are also blocked |
 | Allow API-key password verification for management apps | Lets a trusted app verify a password during account linking |
 | Hide local login on the web login page | Hides the password form, user picker, and forgot-password link |
-| Show “Use a local account” link | Adds a fallback link that reveals the password form |
+| Show “Use a local account” button | Adds a fallback button that reveals the password form |
 | Password login allowed for these users | Break-glass/service accounts that may always use a password |
 
 Important:
