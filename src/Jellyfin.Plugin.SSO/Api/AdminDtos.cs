@@ -118,6 +118,11 @@ public sealed class AdminProviderDto
     public string CallbackUrlOverride { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the post-logout redirect URI override.
+    /// </summary>
+    public string PostLogoutRedirectUri { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the username claim.
     /// </summary>
     public string UsernameClaim { get; set; } = "preferred_username";
@@ -224,6 +229,7 @@ public sealed class AdminProviderDto
             ResponseMode = config.ResponseMode,
             TokenEndpointAuthMethod = config.TokenEndpointAuthMethod,
             CallbackUrlOverride = config.CallbackUrlOverride,
+            PostLogoutRedirectUri = config.PostLogoutRedirectUri,
             UsernameClaim = config.UsernameClaim,
             DisplayNameClaim = config.DisplayNameClaim,
             EmailClaim = config.EmailClaim,
@@ -266,6 +272,7 @@ public sealed class AdminProviderDto
         config.ResponseMode = ResponseMode;
         config.TokenEndpointAuthMethod = TokenEndpointAuthMethod;
         config.CallbackUrlOverride = CallbackUrlOverride.Trim();
+        config.PostLogoutRedirectUri = PostLogoutRedirectUri.Trim();
         config.UsernameClaim = UsernameClaim.Trim();
         config.DisplayNameClaim = DisplayNameClaim.Trim();
         config.EmailClaim = EmailClaim.Trim();

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Jellyfin.Plugin.SSO.Web;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Jellyfin.Plugin.SSO.Tests;
@@ -69,6 +70,40 @@ public class SsoUrlBuilderTests
     public void NormalizesReturnUrls(string? input, string expected)
     {
         Assert.Equal(expected, SsoUrlBuilder.NormalizeReturnUrl(input));
+    }
+
+    [Fact]
+    public void BuildsDefaultPostLogoutRedirect()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("jellyfin.example.com");
+
+        var uri = SsoUrlBuilder.GetPostLogoutRedirectUri(
+            context.Request,
+            new PluginConfiguration(),
+            new OidcProviderConfig { Slug = "authentik" });
+
+        Assert.Equal("https://jellyfin.example.com/web/index.html", uri);
+    }
+
+    [Fact]
+    public void UsesProviderPostLogoutOverride()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("jellyfin.example.com");
+
+        var uri = SsoUrlBuilder.GetPostLogoutRedirectUri(
+            context.Request,
+            new PluginConfiguration(),
+            new OidcProviderConfig
+            {
+                Slug = "authentik",
+                PostLogoutRedirectUri = "https://example.com/logged-out"
+            });
+
+        Assert.Equal("https://example.com/logged-out", uri);
     }
 }
 

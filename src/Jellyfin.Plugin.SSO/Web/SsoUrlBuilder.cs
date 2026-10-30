@@ -39,6 +39,23 @@ public static class SsoUrlBuilder
     }
 
     /// <summary>
+    /// Gets the post-logout redirect URL for a provider.
+    /// </summary>
+    public static string GetPostLogoutRedirectUri(HttpRequest request, PluginConfiguration configuration, OidcProviderConfig provider)
+    {
+        if (!string.IsNullOrWhiteSpace(provider.PostLogoutRedirectUri))
+        {
+            return provider.PostLogoutRedirectUri.Trim();
+        }
+
+        var baseUrl = !string.IsNullOrWhiteSpace(provider.PublicBaseUrlOverride)
+            ? provider.PublicBaseUrlOverride.TrimEnd('/')
+            : GetPublicBaseUrl(request, configuration);
+
+        return baseUrl + "/web/index.html";
+    }
+
+    /// <summary>
     /// Normalizes a return URL to a same-origin Jellyfin web path.
     /// </summary>
     public static string NormalizeReturnUrl(string? value)

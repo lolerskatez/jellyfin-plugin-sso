@@ -354,51 +354,78 @@ not act as a password oracle for SSO-only users.
 
 ## Logout
 
-The plugin currently issues a normal Jellyfin session and does not perform
-OIDC RP-initiated logout, front-channel logout, or back-channel logout. This
-means:
+The plugin implements OIDC RP-initiated logout for **Jellyfin Web** sessions
+that were created through SSO.
 
-1. **Jellyfin logout** ends the Jellyfin device session and token.
-2. **The Authentik session remains active.**
-3. If the user clicks **Sign in with Authentik** again, Authentik may sign them
-   back in without prompting. This is normal SSO behavior, not a plugin error.
+When a user signs out from the Jellyfin user menu or the settings page:
 
-### Sign out of Authentik manually
+1. The plugin revokes the Jellyfin session and clears the browser credentials.
+2. The browser is redirected to `/sso/logout?provider=<slug>`.
+3. The plugin redirects to the provider's discovered `end_session_endpoint`
+   with `client_id` and `post_logout_redirect_uri`.
+4. The identity provider ends its session and returns the browser to the
+   configured post-logout URL.
 
-Use the end-session endpoint from the discovery document:
+Local (password) logins are not redirected to the identity provider; their
+logout follows Jellyfin's normal behavior.
+
+### Configure the post-logout redirect
+
+Open **Single Sign-On → Providers → Edit** and set **Post-logout redirect URI**
+if you want a custom destination. Leave it blank to use:
 
 ```text
-https://auth.example.com/application/o/<application-slug>/end-session/
+<public base URL>/web/index.html
 ```
 
-Add the Jellyfin login page as the post-logout target:
+The provider card shows the effective **Post-logout URI**. Add that exact URI
+to the identity provider as a **Post Logout** redirect URI:
+
+- **Authentik 2026.5 and newer:** add a redirect URI with type **Post Logout**.
+- **Older Authentik versions:** this entry type may not exist; upgrade or leave
+  the field blank and accept Authentik's own logout page.
+
+The URI must match exactly, including the scheme, host, port, and path. Do not
+add a fragment unless your provider explicitly allows it.
+
+### Limitations
+
+- Only Jellyfin Web and Jellyfin Desktop use the injected logout interception.
+  Native mobile/TV clients and direct API logout do not redirect to the
+  identity provider.
+- Forced session expiry, token revocation, or deleting a session in Jellyfin
+  does not trigger identity-provider logout.
+- Front-channel and back-channel logout are not implemented.
+- The plugin sends `client_id` but not `id_token_hint`. This works with Authentik;
+  other providers may require an `id_token_hint` for RP-initiated logout.
+- Sessions created before upgrading to a plugin version with logout support do
+  not have the SSO marker. Sign in through SSO again to enable logout redirect
+  for that browser.
+
+### Manual logout
+
+The endpoint can also be opened directly:
 
 ```text
-https://auth.example.com/application/o/<application-slug>/end-session/?client_id=<client-id>&post_logout_redirect_uri=https%3A%2F%2Fjellyfin.example.com%2Fweb%2Findex.html%23%2Flogin
+<public base URL>/sso/logout?provider=<slug>
 ```
 
-Notes:
-
-- URL-encode the redirect URI. The `#` becomes `%23`.
-- Register `<public base URL>/web/index.html#/login` as a **Post Logout**
-  redirect URI in Authentik (2026.5+). Without it, Authentik shows its own
-  logout confirmation page instead of returning to Jellyfin.
-- `client_id` is optional but helps Authentik select the right provider.
+If no provider is specified, the first enabled provider is used. It only
+performs the identity-provider redirect; clearing the Jellyfin session is the
+web client's responsibility.
 
 ### Sign out of everything
 
-If you want an Authentik logout to end the user's session in Jellyfin and other
-applications, configure a **Single Logout** flow in Authentik:
+To make an Authentik logout end the user's sessions in all applications,
+configure a **Single Logout** flow in Authentik:
 
 1. Open the provider in Authentik.
 2. Under **Advanced flow settings**, set **Invalidation Flow** to a flow that
    includes the **User Logout** stage (for example `default-invalidation-flow`).
 3. Save.
 
-This does not change how Jellyfin initiates logout. It only controls what
-happens when the logout starts in Authentik. Jellyfin does not expose a
-front-channel or back-channel logout endpoint in this plugin version, so
-Authentik cannot terminate a Jellyfin session directly.
+Jellyfin does not expose a front-channel or back-channel logout endpoint in this
+plugin version, so Authentik cannot terminate a Jellyfin session directly.
 
 ## Troubleshooting
 

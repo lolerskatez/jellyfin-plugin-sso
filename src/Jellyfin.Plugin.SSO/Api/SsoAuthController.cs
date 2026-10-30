@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.SSO.Api;
@@ -91,6 +92,56 @@ public sealed class SsoAuthController : SsoControllerBase
                 })
                 .ToList()
         };
+    }
+
+    /// <summary>
+    /// Redirects to the identity provider's end-session endpoint.
+    /// </summary>
+    [HttpGet("logout")]
+    [AllowAnonymous]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> Logout([FromQuery] string? provider, CancellationToken cancellationToken)
+    {
+        var config = Configuration;
+        var providerConfig = !string.IsNullOrWhiteSpace(provider) ? FindProvider(provider) : null;
+        providerConfig ??= config.Providers
+            .Where(x => x.Enabled)
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        if (providerConfig is null)
+        {
+            return Redirect(SsoUrlBuilder.GetPublicBaseUrl(Request, config) + "/web/index.html");
+        }
+
+        var returnUri = SsoUrlBuilder.GetPostLogoutRedirectUri(Request, config, providerConfig);
+        try
+        {
+            var discovery = await _providerFactory.Get(providerConfig)
+                .GetDiscoveryAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(discovery.EndSessionEndpoint))
+            {
+                return Redirect(returnUri);
+            }
+
+            var endSessionUrl = QueryHelpers.AddQueryString(
+                discovery.EndSessionEndpoint,
+                new Dictionary<string, string?>
+                {
+                    ["client_id"] = providerConfig.ClientId,
+                    ["post_logout_redirect_uri"] = returnUri
+                });
+
+            _logger.LogInformation("Redirecting to OIDC end-session for provider {Provider}.", providerConfig.Slug);
+            return Redirect(endSessionUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to build the end-session URL for provider {Provider}.", providerConfig.Slug);
+            return Redirect(returnUri);
+        }
     }
 
     /// <summary>
@@ -338,7 +389,8 @@ public sealed class SsoAuthController : SsoControllerBase
                 ServerId = result.ServerId,
                 ServerName = _applicationHost.FriendlyName,
                 User = new SsoUserDto { Id = result.User.Id, Name = result.User.Name },
-                ReturnUrl = SsoUrlBuilder.NormalizeReturnUrl(ticket.ReturnUrl)
+                ReturnUrl = SsoUrlBuilder.NormalizeReturnUrl(ticket.ReturnUrl),
+                ProviderId = ticket.ProviderId
             };
         }
         catch (SecurityException ex)

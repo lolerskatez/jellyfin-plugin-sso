@@ -68,6 +68,13 @@ public sealed class ProviderConfigurationValidator : IProviderConfigurationValid
             return false;
         }
 
+        if (!string.IsNullOrWhiteSpace(request.PostLogoutRedirectUri)
+            && !Uri.TryCreate(request.PostLogoutRedirectUri, UriKind.Absolute, out _))
+        {
+            validationError = "Post-logout redirect URI must be an absolute URL.";
+            return false;
+        }
+
         if (!string.IsNullOrWhiteSpace(request.PublicBaseUrlOverride)
             && !Uri.TryCreate(request.PublicBaseUrlOverride, UriKind.Absolute, out _))
         {

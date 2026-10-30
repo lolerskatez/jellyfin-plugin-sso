@@ -133,6 +133,11 @@ public sealed class CompleteLoginResponse
     /// Gets or sets the validated return URL.
     /// </summary>
     public string ReturnUrl { get; set; } = "/web/index.html#/home";
+
+    /// <summary>
+    /// Gets or sets the provider slug used for this session.
+    /// </summary>
+    public string ProviderId { get; set; } = string.Empty;
 }
 
 /// <summary>

@@ -162,9 +162,11 @@
 
 .ssoBadge {
     display: inline-block;
+    margin-left: 0.55rem;
     padding: 0.12rem 0.45rem;
     border-radius: 999px;
     font-size: 0.78rem;
+    vertical-align: middle;
     color: var(--sso-text);
     background: rgba(76, 194, 255, 0.16);
     background: color-mix(in srgb, var(--sso-accent) 16%, transparent);

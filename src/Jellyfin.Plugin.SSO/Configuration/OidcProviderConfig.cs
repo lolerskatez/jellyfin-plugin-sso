@@ -107,6 +107,11 @@ public class OidcProviderConfig
     public string CallbackUrlOverride { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets an optional post-logout redirect URI. Empty uses the Jellyfin web index.
+    /// </summary>
+    public string PostLogoutRedirectUri { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the claim used for the suggested Jellyfin username.
     /// </summary>
     public string UsernameClaim { get; set; } = "preferred_username";

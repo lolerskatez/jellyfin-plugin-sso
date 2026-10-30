@@ -29,6 +29,7 @@ app.MapGet("/.well-known/openid-configuration", () => Results.Json(new Dictionar
     ["token_endpoint"] = Issuer + "/token",
     ["userinfo_endpoint"] = Issuer + "/userinfo",
     ["jwks_uri"] = Issuer + "/jwks",
+    ["end_session_endpoint"] = Issuer + "/end-session",
     ["response_types_supported"] = new[] { "code" },
     ["subject_types_supported"] = new[] { "public" },
     ["id_token_signing_alg_values_supported"] = new[] { "RS256" },
@@ -37,8 +38,7 @@ app.MapGet("/.well-known/openid-configuration", () => Results.Json(new Dictionar
 }));
 
 app.MapGet("/jwks", () =>
-{
-    var parameters = rsa.ExportParameters(false);
+{    var parameters = rsa.ExportParameters(false);
     return Results.Json(new
     {
         keys = new[]
@@ -152,6 +152,14 @@ app.MapGet("/userinfo", (HttpRequest request) =>
         ["email_verified"] = true,
         ["groups"] = GroupsFor(user)
     });
+});
+
+app.MapGet("/end-session", (HttpRequest request) =>
+{
+    var redirect = request.Query["post_logout_redirect_uri"].ToString();
+    return string.IsNullOrWhiteSpace(redirect)
+        ? Results.Ok(new { signedOut = true })
+        : Results.Redirect(redirect);
 });
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", defaultUser }));

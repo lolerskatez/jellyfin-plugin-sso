@@ -140,6 +140,21 @@
 
         localStorage.setItem('jellyfin_credentials', JSON.stringify(credentials));
         localStorage.setItem('enableAutoLogin', 'true');
+
+        try {
+            var provider = result.ProviderId || result.providerId || '';
+            if (provider) {
+                localStorage.setItem('sso_session', JSON.stringify({
+                    provider: provider,
+                    serverId: result.ServerId,
+                    userId: user.Id || user.id
+                }));
+            } else {
+                localStorage.removeItem('sso_session');
+            }
+        } catch (e) {
+            // Logout interception is optional; never fail a successful login.
+        }
     }
 
     function safeReturnUrl(value) {
@@ -197,7 +212,8 @@
                 AccessToken: result.AccessToken || result.accessToken,
                 ServerId: result.ServerId || result.serverId,
                 User: result.User || result.user,
-                ReturnUrl: result.ReturnUrl || result.returnUrl
+                ReturnUrl: result.ReturnUrl || result.returnUrl,
+                ProviderId: result.ProviderId || result.providerId
             });
         }).catch(function (error) {
             showError(error.message || 'internal_error');

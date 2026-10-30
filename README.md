@@ -155,8 +155,9 @@ The client receives a normal Jellyfin token and works exactly as before.
 - Jellyfin 10.11 is not supported by this build; it targets Jellyfin 12.x/.NET 10.
 - Login-page injection applies to Jellyfin Web and Jellyfin Desktop. External
   web deployments need the branding fallback described in the admin page.
-- OIDC single logout is not implemented. Logging out of Jellyfin does not end
-  the identity provider session; see
+- OIDC RP-initiated logout is implemented for Jellyfin Web sessions created
+  through SSO. Native clients, forced expiry, and direct API logout do not
+  trigger identity-provider logout; see
   [docs/configuration.md#logout](docs/configuration.md#logout).
 - The provider client secret is stored in Jellyfin's plugin configuration, like
   other Jellyfin plugins. Protect the configuration directory.

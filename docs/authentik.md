@@ -156,17 +156,32 @@ unavailable.
 
 ## 8. Logout
 
-The plugin does not implement OIDC single logout. Logging out of Jellyfin ends
-the Jellyfin session, but the Authentik session remains active.
+The plugin implements RP-initiated logout for Jellyfin Web sessions created
+through SSO. Signing out from the user menu or settings page:
 
-To sign out of Authentik, open:
+1. Revokes the Jellyfin session and clears browser credentials.
+2. Redirects to the plugin’s `/sso/logout` endpoint.
+3. Redirects to Authentik’s `end_session_endpoint` with `client_id` and
+   `post_logout_redirect_uri`.
+4. Authentik ends its session and returns to the Jellyfin web index.
+
+Configure the destination under **Jellyfin → Single Sign-On → Providers →
+Edit → Post-logout redirect URI**. Leave it blank to use:
 
 ```text
-https://authentik.example.com/application/o/jellyfin/end-session/?client_id=<client-id>&post_logout_redirect_uri=https%3A%2F%2Fjellyfin.example.com%2Fweb%2Findex.html%23%2Flogin
+https://jellyfin.example.com/web/index.html
 ```
 
-Register `https://jellyfin.example.com/web/index.html#/login` as a **Post Logout**
-redirect URI in Authentik first.
+The provider card displays the effective **Post-logout URI**. Add that exact URI
+to the Authentik provider as a **Post Logout** redirect URI (Authentik 2026.5+).
+
+Notes:
+
+- Local password sessions and native client sessions do not trigger Authentik
+  logout.
+- The plugin sends `client_id`, not `id_token_hint`.
+- Sessions created before the logout feature was installed do not have the SSO
+  marker; sign in through SSO again.
 
 To make an Authentik logout end the user's sessions in all applications, select
 an **Invalidation Flow** that includes the **User Logout** stage (for example

@@ -72,6 +72,7 @@ public sealed class LoginPageMiddleware
             var assetVersion = HtmlEncoder.Default.Encode(GetAssetVersion());
             var css = $"    <link rel=\"stylesheet\" href=\"{assetBase}/login.css?v={assetVersion}\">\n";
             var script = $"    <script src=\"{assetBase}/login.js?v={assetVersion}\" defer></script>\n";
+            var logoutScript = $"    <script src=\"{assetBase}/logout.js?v={assetVersion}\" defer></script>\n";
 
             if (html.Contains("</head>", StringComparison.OrdinalIgnoreCase))
             {
@@ -80,11 +81,11 @@ public sealed class LoginPageMiddleware
 
             if (html.Contains("</body>", StringComparison.OrdinalIgnoreCase))
             {
-                html = html.Replace("</body>", script + Marker + "\n</body>", StringComparison.OrdinalIgnoreCase);
+                html = html.Replace("</body>", script + logoutScript + Marker + "\n</body>", StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                html += script + Marker;
+                html += script + logoutScript + Marker;
             }
         }
 

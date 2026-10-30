@@ -237,6 +237,19 @@
         refresh();
     }
 
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (!form || !form.classList || !form.classList.contains('manualLoginForm')) {
+            return;
+        }
+
+        try {
+            localStorage.removeItem('sso_session');
+        } catch (e) {
+            // Logout interception is optional.
+        }
+    }, true);
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', start);
     } else {

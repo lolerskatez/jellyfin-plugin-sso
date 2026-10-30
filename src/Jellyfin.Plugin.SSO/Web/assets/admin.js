@@ -268,6 +268,8 @@
             var slug = get(provider, 'slug');
             var enabled = get(provider, 'enabled');
             var redirect = (status && get(status, 'publicBaseUrl') ? get(status, 'publicBaseUrl') : apiBase) + '/sso/callback/' + slug;
+            var postLogout = get(provider, 'postLogoutRedirectUri')
+                || ((status && get(status, 'publicBaseUrl') ? get(status, 'publicBaseUrl') : apiBase) + '/web/index.html');
 
             var actions = el('div', { className: 'ssoFormActions' }, [
                 el('button', {
@@ -304,11 +306,12 @@
             panel.appendChild(el('div', { className: 'ssoBox' }, [
                 el('h3', {}, [
                     el('span', { text: get(provider, 'displayName') || slug }),
-                    el('span', { className: 'ssoBadge' + (enabled ? '' : ' off'), text: enabled ? ' enabled' : ' disabled' })
+                    el('span', { className: 'ssoBadge' + (enabled ? '' : ' off'), text: enabled ? 'Enabled' : 'Disabled' })
                 ]),
                 el('p', { className: 'ssoMuted', text: 'Slug: ' + slug }),
                 el('p', { className: 'ssoMuted', text: 'Authority: ' + (get(provider, 'authority') || get(provider, 'discoveryUrl') || '—') }),
                 el('p', { className: 'ssoMuted', text: 'Redirect URI: ' + redirect }),
+                el('p', { className: 'ssoMuted', text: 'Post-logout URI: ' + postLogout }),
                 actions
             ]));
         });
@@ -340,6 +343,8 @@
         var clientId = input(get(p, 'clientId') || '');
         var clientSecret = input('', 'password');
         clientSecret.placeholder = get(p, 'hasClientSecret') ? 'Stored secret — leave blank to keep' : 'Client secret (optional for public clients)';
+        var postLogoutRedirect = input(get(p, 'postLogoutRedirectUri') || '');
+        postLogoutRedirect.placeholder = 'Optional; defaults to <public base>/web/index.html';
         var scopes = input(get(p, 'scopes') || 'openid profile email groups');
         var usernameClaim = input(get(p, 'usernameClaim') || 'preferred_username');
         var displayNameClaim = input(get(p, 'displayNameClaim') || 'name');
@@ -396,6 +401,7 @@
             field('Issuer override (optional)', issuer),
             field('Client ID', clientId),
             field('Client secret', clientSecret),
+            field('Post-logout redirect URI (optional)', postLogoutRedirect),
             el('label', { className: 'ssoCheck' }, [
                 (function () { var c = el('input', { type: 'checkbox' }); c.id = 'sso-clear-secret'; return c; })(),
                 el('span', { text: 'Clear stored client secret' })
@@ -453,6 +459,7 @@
                 clientId: clientId.value.trim(),
                 clientSecret: clientSecret.value,
                 clearClientSecret: document.getElementById('sso-clear-secret').checked,
+                postLogoutRedirectUri: postLogoutRedirect.value.trim(),
                 scopes: scopes.value.trim(),
                 usePkce: usePkce.querySelector('input').checked,
                 fetchUserInfo: fetchUserInfo.querySelector('input').checked,
