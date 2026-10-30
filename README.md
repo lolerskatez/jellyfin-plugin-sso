@@ -88,14 +88,14 @@ jprm plugin build .
 1. In Authentik, create an **OIDC provider**:
    - Client type: Confidential
    - Redirect URI: `https://jellyfin.example.com/sso/callback/authentik`
-   - Scopes: `openid profile email groups`
-   - Ensure a `groups` scope mapping returns group names.
+   - Scopes: `openid profile email` (the default `profile` scope includes groups)
+   - Select a signing key
 2. In Jellyfin, open **Dashboard → Plugins → Single Sign-On**.
 3. Add a provider:
    - Slug: `authentik`
    - Authority: `https://authentik.example.com/application/o/jellyfin/`
    - Client ID / secret
-   - Scopes: `openid profile email groups`
+   - Scopes: `openid profile email`
    - Username claim: `preferred_username`
    - Group paths: `groups`
    - Admin roles: `jellyfin-admins`
@@ -104,7 +104,9 @@ jprm plugin build .
 5. Copy the displayed redirect URI into Authentik exactly.
 6. Reload the Jellyfin login page.
 
-Detailed instructions are in [docs/authentik.md](docs/authentik.md).
+Detailed instructions, including redirect URI rules and logout behavior, are in
+[docs/configuration.md](docs/configuration.md). Authentik-specific notes are in
+[docs/authentik.md](docs/authentik.md).
 
 The module boundaries and extension points are documented in
 [docs/architecture.md](docs/architecture.md).
@@ -150,7 +152,9 @@ The client receives a normal Jellyfin token and works exactly as before.
 - Jellyfin 10.11 is not supported by this build; it targets Jellyfin 12.x/.NET 10.
 - Login-page injection applies to Jellyfin Web and Jellyfin Desktop. External
   web deployments need the branding fallback described in the admin page.
-- OIDC single logout is not implemented.
+- OIDC single logout is not implemented. Logging out of Jellyfin does not end
+  the identity provider session; see
+  [docs/configuration.md#logout](docs/configuration.md#logout).
 - The provider client secret is stored in Jellyfin's plugin configuration, like
   other Jellyfin plugins. Protect the configuration directory.
 - Multi-instance Jellyfin is not supported by the in-memory state/ticket stores.
