@@ -33,6 +33,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public LoginPageSettings LoginPage { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets password-login policy settings.
+    /// </summary>
+    public SsoOnlySettings SsoOnly { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets a value indicating whether discovery and token endpoints must use HTTPS.
     /// </summary>
     public bool RequireHttps { get; set; } = true;

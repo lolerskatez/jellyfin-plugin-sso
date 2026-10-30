@@ -56,9 +56,14 @@ public sealed class ExternalLinkRecord
     public DateTimeOffset? LastLoginAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the link source: auto, self, admin.
+    /// Gets or sets the link source: auto, self, admin, or integration.
     /// </summary>
     public string Source { get; set; } = "auto";
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the Jellyfin user was created by the plugin.
+    /// </summary>
+    public bool Provisioned { get; set; }
 }
 
 /// <summary>
@@ -277,6 +282,15 @@ public sealed class LinkStore : ILinkStore
             .ConfigureAwait(false) ?? new LinkStoreFile();
 
         _data.Links ??= [];
+        foreach (var link in _data.Links)
+        {
+            if (!link.Provisioned
+                && string.Equals(link.Source, "auto", StringComparison.OrdinalIgnoreCase))
+            {
+                link.Provisioned = true;
+            }
+        }
+
         return _data;
     }
 

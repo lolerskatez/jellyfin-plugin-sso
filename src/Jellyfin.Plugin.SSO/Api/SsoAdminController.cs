@@ -1,3 +1,5 @@
+using Jellyfin.Data;
+using Jellyfin.Database.Implementations.Enums;
 using Jellyfin.Plugin.SSO.Abstractions;
 using Jellyfin.Plugin.SSO.Accounts;
 using Jellyfin.Plugin.SSO.Configuration;
@@ -78,7 +80,9 @@ public sealed class SsoAdminController : ControllerBase
             InjectionEnabled = config.LoginPage.InjectLoginPage,
             EnabledProviders = config.Providers.Count(x => x.Enabled),
             LinkCount = links.Count,
-            PendingCount = pending.Count
+            PendingCount = pending.Count,
+            ApiVersion = 1,
+            SsoOnlyEnabled = config.SsoOnly.Enabled
         };
     }
 
@@ -259,7 +263,8 @@ public sealed class SsoAdminController : ControllerBase
             TicketLifetimeSeconds = config.TicketLifetimeSeconds,
             Provisioning = config.Provisioning,
             Roles = config.Roles,
-            LoginPage = config.LoginPage
+            LoginPage = config.LoginPage,
+            SsoOnly = ToAdminSsoOnly(config.SsoOnly)
         };
     }
 
@@ -280,6 +285,13 @@ public sealed class SsoAdminController : ControllerBase
             return BadRequest(Error("invalid_settings", "Public base URL must be an absolute URL."));
         }
 
+        SsoOnlySettings? ssoOnly = null;
+        if (request.SsoOnly is not null
+            && !TryBuildSsoOnlySettings(request.SsoOnly, out ssoOnly, out var ssoOnlyError))
+        {
+            return BadRequest(Error("invalid_sso_only", ssoOnlyError!));
+        }
+
         lock (ConfigWriteLock)
         {
             var config = _config.Current;
@@ -290,29 +302,143 @@ public sealed class SsoAdminController : ControllerBase
             config.Provisioning = request.Provisioning ?? new ProvisioningSettings();
             config.Roles = request.Roles ?? new RoleMappingSettings();
             config.LoginPage = request.LoginPage ?? new LoginPageSettings();
+            if (ssoOnly is not null)
+            {
+                config.SsoOnly = ssoOnly;
+            }
+
             _config.Save();
         }
 
         return GetSettings();
     }
 
+    private AdminSsoOnlyDto ToAdminSsoOnly(SsoOnlySettings settings)
+    {
+        var names = settings.PasswordLoginAllowedUserIds
+            .Select(id => _userManager.GetUserById(id)?.Username)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => name!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return new AdminSsoOnlyDto
+        {
+            Enabled = settings.Enabled,
+            BlockProvisionedUsers = settings.BlockProvisionedUsers,
+            BlockLinkedUsers = settings.BlockLinkedUsers,
+            AllowApiKeyPasswordVerification = settings.AllowApiKeyPasswordVerification,
+            HideLocalLogin = settings.HideLocalLogin,
+            ShowLocalAccountLink = settings.ShowLocalAccountLink,
+            PasswordLoginAllowedUserIds = settings.PasswordLoginAllowedUserIds.ToList(),
+            PasswordLoginAllowedUsers = names
+        };
+    }
+
+    private bool TryBuildSsoOnlySettings(AdminSsoOnlyDto request, out SsoOnlySettings? settings, out string? error)
+    {
+        settings = null;
+        error = null;
+
+        var ids = new List<Guid>();
+        foreach (var name in request.PasswordLoginAllowedUsers ?? [])
+        {
+            var normalized = name?.Trim();
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                continue;
+            }
+
+            var user = _userManager.GetUserByName(normalized);
+            if (user is null)
+            {
+                error = $"Jellyfin user '{normalized}' was not found.";
+                return false;
+            }
+
+            ids.Add(user.Id);
+        }
+
+        if (ids.Count == 0 && request.PasswordLoginAllowedUserIds is { Count: > 0 })
+        {
+            ids.AddRange(request.PasswordLoginAllowedUserIds);
+        }
+
+        ids = ids.Distinct().ToList();
+
+        if (request.Enabled)
+        {
+            var hasAdmin = ids
+                .Select(id => _userManager.GetUserById(id))
+                .Any(user => user is not null && user.HasPermission(PermissionKind.IsAdministrator));
+            if (!hasAdmin)
+            {
+                error = "Add at least one existing Jellyfin administrator to the password-login allowlist before enabling SSO-only login.";
+                return false;
+            }
+        }
+
+        settings = new SsoOnlySettings
+        {
+            Enabled = request.Enabled,
+            BlockProvisionedUsers = request.BlockProvisionedUsers,
+            BlockLinkedUsers = request.BlockLinkedUsers,
+            AllowApiKeyPasswordVerification = request.AllowApiKeyPasswordVerification,
+            HideLocalLogin = request.HideLocalLogin,
+            ShowLocalAccountLink = request.ShowLocalAccountLink,
+            PasswordLoginAllowedUserIds = ids
+        };
+        return true;
+    }
+
     /// <summary>
-    /// Gets all links.
+    /// Gets links, optionally filtered by user, provider, issuer, or subject.
     /// </summary>
     [HttpGet("links")]
-    public async Task<ActionResult> GetLinks(CancellationToken cancellationToken)
+    public async Task<ActionResult> GetLinks(
+        [FromQuery] Guid? userId,
+        [FromQuery] string? provider,
+        [FromQuery] string? issuer,
+        [FromQuery] string? subject,
+        CancellationToken cancellationToken)
     {
         var links = await _linkStore.GetAllAsync(cancellationToken).ConfigureAwait(false);
-        return Ok(links.Select(x => new
+        var filtered = links.AsEnumerable();
+
+        if (userId.HasValue)
+        {
+            filtered = filtered.Where(x => x.JellyfinUserId == userId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(provider))
+        {
+            filtered = filtered.Where(x => string.Equals(x.ProviderId, provider.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(issuer))
+        {
+            filtered = filtered.Where(x => string.Equals(x.Issuer, issuer.Trim(), StringComparison.Ordinal));
+        }
+
+        if (!string.IsNullOrWhiteSpace(subject))
+        {
+            filtered = filtered.Where(x => string.Equals(x.Subject, subject.Trim(), StringComparison.Ordinal));
+        }
+
+        return Ok(filtered.Select(x => new
         {
             x.ProviderId,
+            x.Issuer,
+            x.Subject,
             x.JellyfinUserId,
             x.Username,
             x.Email,
             x.DisplayName,
             x.CreatedAt,
             x.LastLoginAt,
-            x.Source
+            x.Source,
+            x.Provisioned
         }));
     }
 
@@ -324,6 +450,184 @@ public sealed class SsoAdminController : ControllerBase
     {
         var removed = await _identityResolver.UnlinkAsync(userId, provider, cancellationToken).ConfigureAwait(false);
         return removed ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Creates a link for a trusted integration.
+    /// </summary>
+    [HttpPost("links")]
+    public async Task<ActionResult> CreateLink([FromBody] CreateLinkRequest request, CancellationToken cancellationToken)
+    {
+        if (request is null
+            || string.IsNullOrWhiteSpace(request.Provider)
+            || string.IsNullOrWhiteSpace(request.Issuer)
+            || string.IsNullOrWhiteSpace(request.Subject)
+            || request.UserId == Guid.Empty)
+        {
+            return BadRequest(Error("invalid_request", "Provider, issuer, subject, and userId are required."));
+        }
+
+        var providerSlug = request.Provider.Trim();
+        var provider = _config.Current.Providers.FirstOrDefault(x =>
+            string.Equals(x.Slug, providerSlug, StringComparison.OrdinalIgnoreCase));
+        if (provider is null)
+        {
+            return NotFound(Error("provider_not_found", "Provider not found."));
+        }
+
+        var user = _userManager.GetUserById(request.UserId);
+        if (user is null)
+        {
+            return NotFound(Error("user_not_found", "Jellyfin user not found."));
+        }
+
+        if (user.HasPermission(PermissionKind.IsDisabled))
+        {
+            return Conflict(Error("user_disabled", "The Jellyfin user is disabled."));
+        }
+
+        string discoveredIssuer;
+        try
+        {
+            var discovery = await _providerFactory.Get(provider)
+                .GetDiscoveryAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            discoveredIssuer = discovery.Issuer;
+        }
+        catch (OidcException ex)
+        {
+            return BadRequest(Error("issuer_unavailable", ex.Message));
+        }
+        catch (HttpRequestException ex)
+        {
+            return BadRequest(Error("issuer_unavailable", ex.Message));
+        }
+
+        var issuer = request.Issuer.Trim();
+        var subject = request.Subject.Trim();
+        if (!string.Equals(issuer, discoveredIssuer, StringComparison.Ordinal))
+        {
+            return BadRequest(Error("issuer_mismatch", "The issuer does not match the provider discovery document."));
+        }
+
+        var existing = await _linkStore.FindAsync(provider.Slug, issuer, subject, cancellationToken)
+            .ConfigureAwait(false);
+        if (existing is not null)
+        {
+            return existing.JellyfinUserId == user.Id
+                ? Ok(ToLinkResponse(existing))
+                : Conflict(Error("identity_already_linked", "This identity is linked to another Jellyfin user."));
+        }
+
+        var existingForProvider = await _linkStore.GetForUserAsync(user.Id, cancellationToken)
+            .ConfigureAwait(false);
+        if (existingForProvider.Any(x => string.Equals(x.ProviderId, provider.Slug, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Conflict(Error("user_already_linked", "This Jellyfin user is already linked to this provider."));
+        }
+
+        var identity = new OidcIdentity
+        {
+            Issuer = issuer,
+            Subject = subject,
+            Username = string.IsNullOrWhiteSpace(request.Username) ? user.Username : request.Username.Trim(),
+            Email = request.Email?.Trim() ?? string.Empty,
+            DisplayName = request.DisplayName?.Trim() ?? string.Empty
+        };
+
+        var result = await _identityResolver.LinkAsync(
+            identity,
+            provider,
+            user.Id,
+            source: "integration",
+            actor: "api-key",
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (result.Status != IdentityResolutionStatus.Success)
+        {
+            var conflict = string.Equals(result.ErrorCode, "identity_already_linked", StringComparison.Ordinal)
+                || string.Equals(result.ErrorCode, "provider_already_linked", StringComparison.Ordinal);
+            return conflict
+                ? Conflict(Error(result.ErrorCode ?? "link_conflict", result.Error ?? "Unable to create the link."))
+                : BadRequest(Error(result.ErrorCode ?? "link_failed", result.Error ?? "Unable to create the link."));
+        }
+
+        var created = await _linkStore.FindAsync(provider.Slug, issuer, subject, cancellationToken)
+            .ConfigureAwait(false);
+        return created is null
+            ? StatusCode(StatusCodes.Status201Created)
+            : StatusCode(StatusCodes.Status201Created, ToLinkResponse(created));
+    }
+
+    /// <summary>
+    /// Evaluates password-login policy by username.
+    /// </summary>
+    [HttpGet("password-policy")]
+    public Task<ActionResult<PasswordPolicyDto>> GetPasswordPolicy(
+        [FromQuery] string? username,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return Task.FromResult<ActionResult<PasswordPolicyDto>>(
+                BadRequest(Error("invalid_request", "A username is required.")));
+        }
+
+        var user = _userManager.GetUserByName(username.Trim());
+        return BuildPasswordPolicyAsync(user, cancellationToken);
+    }
+
+    /// <summary>
+    /// Evaluates password-login policy by Jellyfin user ID.
+    /// </summary>
+    [HttpGet("users/{userId:guid}/password-policy")]
+    public Task<ActionResult<PasswordPolicyDto>> GetUserPasswordPolicy(Guid userId, CancellationToken cancellationToken)
+    {
+        var user = _userManager.GetUserById(userId);
+        return BuildPasswordPolicyAsync(user, cancellationToken);
+    }
+
+    private async Task<ActionResult<PasswordPolicyDto>> BuildPasswordPolicyAsync(
+        Jellyfin.Database.Implementations.Entities.User? user,
+        CancellationToken cancellationToken)
+    {
+        if (user is null)
+        {
+            return NotFound(Error("user_not_found", "Jellyfin user not found."));
+        }
+
+        var config = _config.Current;
+        var links = await _linkStore.GetForUserAsync(user.Id, cancellationToken).ConfigureAwait(false);
+        var decision = SsoOnlyPolicy.Evaluate(user.Id, links, config.SsoOnly);
+
+        return new PasswordPolicyDto
+        {
+            UserId = user.Id,
+            Username = user.Username,
+            PasswordAllowed = decision.Allowed,
+            Reason = decision.Reason,
+            SsoOnlyEnabled = config.SsoOnly.Enabled,
+            Provisioned = decision.Provisioned,
+            Linked = decision.Linked
+        };
+    }
+
+    private static object ToLinkResponse(ExternalLinkRecord link)
+    {
+        return new
+        {
+            link.ProviderId,
+            link.Issuer,
+            link.Subject,
+            link.JellyfinUserId,
+            link.Username,
+            link.Email,
+            link.DisplayName,
+            link.CreatedAt,
+            link.LastLoginAt,
+            link.Source,
+            link.Provisioned
+        };
     }
 
     /// <summary>

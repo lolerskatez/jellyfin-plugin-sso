@@ -296,6 +296,62 @@ Administrators can review and revoke links under **Single Sign-On → Links**.
 
 Keep a separate local administrator account as a break-glass account.
 
+## SSO-only login
+
+The plugin can block password authentication for SSO-managed users while
+keeping normal Jellyfin clients usable through Quick Connect.
+
+Open **Single Sign-On → Settings → SSO-only login**:
+
+| Setting | Meaning |
+|---|---|
+| Enforce SSO-only login | Turns the password policy on |
+| Block password login for auto-provisioned SSO users | Default. Users created by the plugin cannot use a password |
+| Also block linked local users | Optional strict mode. Users who linked an existing account are also blocked |
+| Allow API-key password verification for management apps | Lets a trusted app verify a password during account linking |
+| Hide local login on the web login page | Hides the password form, user picker, and forgot-password link |
+| Show “Use a local account” link | Adds a fallback link that reveals the password form |
+| Password login allowed for these users | Break-glass/service accounts that may always use a password |
+
+Important:
+
+- At least one existing **Jellyfin administrator** must be in the allowlist
+  before the policy can be enabled. This is the break-glass account if the
+  identity provider is unavailable.
+- The allowlist is stored as Jellyfin user IDs, so renaming a user does not
+  remove their exemption.
+- **API-key password verification is allowed by default** so trusted
+  integrations can verify credentials while linking. A valid Jellyfin API key is
+  already an administrative credential; protect it accordingly.
+- Quick Connect remains enabled. Native clients use the Quick Connect helper at
+  `/sso/quickconnect`; the plugin does not add an SSO button to native apps.
+- The plugin still rejects password logins for SSO-only users even if they open
+  a native app or call the API directly.
+
+### For trusted integrations
+
+The plugin exposes these admin endpoints for trusted applications using the
+Jellyfin API key:
+
+```text
+GET  /sso/admin/status
+GET  /sso/admin/links?userId=<guid>
+GET  /sso/admin/links?provider=<slug>&issuer=<url>&subject=<value>
+GET  /sso/admin/password-policy?username=<name>
+GET  /sso/admin/users/{userId}/password-policy
+POST /sso/admin/links
+DELETE /sso/admin/links/{provider}/{userId}
+```
+
+`POST /sso/admin/links` creates a link between an OIDC identity and a Jellyfin
+user. The issuer must match the provider's discovery document. Integration
+links are never marked as provisioned, so existing local users remain
+password-capable under the balanced policy.
+
+`GET /sso/admin/password-policy` returns the same decision the login middleware
+uses. An integration should call it **before** verifying a password, so it does
+not act as a password oracle for SSO-only users.
+
 ## Logout
 
 The plugin currently issues a normal Jellyfin session and does not perform

@@ -74,6 +74,8 @@ public sealed class SsoAuthController : SsoControllerBase
         {
             MaxInlineButtons = Math.Clamp(config.LoginPage.MaxInlineButtons, 1, 10),
             ShowProviderButtons = config.LoginPage.ShowProviderButtons,
+            HideLocalLogin = config.SsoOnly.Enabled && config.SsoOnly.HideLocalLogin,
+            ShowLocalAccountLink = config.SsoOnly.Enabled && config.SsoOnly.HideLocalLogin && config.SsoOnly.ShowLocalAccountLink,
             Providers = config.Providers
                 .Where(x => x.Enabled && !string.IsNullOrWhiteSpace(x.Slug))
                 .OrderBy(x => x.DisplayOrder)
@@ -226,7 +228,7 @@ public sealed class SsoAuthController : SsoControllerBase
                     identity,
                     providerConfig,
                     state.JellyfinUserId.Value,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 return linkResult.Status == IdentityResolutionStatus.Success
                     ? Redirect(LocalUrl("/sso/link?status=linked"))

@@ -507,6 +507,7 @@
         var provisioning = get(settings, 'provisioning') || {};
         var roles = get(settings, 'roles') || {};
         var loginPage = get(settings, 'loginPage') || {};
+        var ssoOnly = get(settings, 'ssoOnly') || {};
 
         var autoProvision = checkbox('Auto-provision new users', get(provisioning, 'autoProvisionNewUsers') !== false);
         var requireApproval = checkbox('Require administrator approval for new users', !!get(provisioning, 'requireAdminApproval'));
@@ -529,6 +530,16 @@
         var maxButtons = input(get(loginPage, 'maxInlineButtons') || 3, 'number');
         var inject = checkbox('Inject the SSO login button into the web client', get(loginPage, 'injectLoginPage') !== false);
 
+        var ssoOnlyEnabled = checkbox('Enforce SSO-only login', !!get(ssoOnly, 'enabled'));
+        var blockProvisioned = checkbox('Block password login for auto-provisioned SSO users', get(ssoOnly, 'blockProvisionedUsers') !== false);
+        var blockLinked = checkbox('Also block linked local users', !!get(ssoOnly, 'blockLinkedUsers'));
+        var allowApiKey = checkbox('Allow API-key password verification for management apps', get(ssoOnly, 'allowApiKeyPasswordVerification') !== false);
+        var hideLocal = checkbox('Hide local login on the web login page', get(ssoOnly, 'hideLocalLogin') !== false);
+        var showLocalLink = checkbox('Show a “Use a local account” link', get(ssoOnly, 'showLocalAccountLink') !== false);
+        var allowedUsers = input((get(ssoOnly, 'passwordLoginAllowedUsers') || []).join(', '));
+        allowedUsers.placeholder = 'admin, another-local-user';
+        var ssoOnlyHeading = el('h3', { className: 'ssoFormSection', text: 'SSO-only login' });
+
         var form = el('form', { className: 'ssoForm' });
         [
             field('Public base URL override', publicBaseUrl),
@@ -549,7 +560,15 @@
             requireRole,
             protectLastAdmin,
             inject,
-            field('Maximum inline login buttons', maxButtons)
+            field('Maximum inline login buttons', maxButtons),
+            ssoOnlyHeading,
+            ssoOnlyEnabled,
+            blockProvisioned,
+            blockLinked,
+            allowApiKey,
+            hideLocal,
+            showLocalLink,
+            field('Password login allowed for these users (comma separated)', allowedUsers)
         ].forEach(function (node) { form.appendChild(node); });
 
         var save = el('button', { className: 'ssoBtn', text: 'Save settings' });
@@ -592,6 +611,15 @@
                     injectLoginPage: inject.querySelector('input').checked,
                     maxInlineButtons: Number(maxButtons.value) || 3,
                     showProviderButtons: get(loginPage, 'showProviderButtons') !== false
+                },
+                ssoOnly: {
+                    enabled: ssoOnlyEnabled.querySelector('input').checked,
+                    blockProvisionedUsers: blockProvisioned.querySelector('input').checked,
+                    blockLinkedUsers: blockLinked.querySelector('input').checked,
+                    allowApiKeyPasswordVerification: allowApiKey.querySelector('input').checked,
+                    hideLocalLogin: hideLocal.querySelector('input').checked,
+                    showLocalAccountLink: showLocalLink.querySelector('input').checked,
+                    passwordLoginAllowedUsers: split(allowedUsers.value)
                 }
             };
 

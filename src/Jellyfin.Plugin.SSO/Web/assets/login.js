@@ -6,6 +6,10 @@
     var apiBase = window.location.origin + basePath;
     var providers = null;
     var maxInlineButtons = 3;
+    var hideLocalLogin = false;
+    var showLocalAccountLink = false;
+    var localLoginRequested = false;
+    var localLoginStyleId = 'sso-hide-local-login';
     var observer = null;
 
     function getReturnUrl() {
@@ -62,17 +66,67 @@
         return button;
     }
 
+    function setLocalLoginHidden(hidden) {
+        var style = document.getElementById(localLoginStyleId);
+        if (hidden && !style) {
+            style = document.createElement('style');
+            style.id = localLoginStyleId;
+            style.textContent = '.manualLoginForm, .btnManual, .btnForgotPassword, #divUsers { display: none !important; }';
+            document.head.appendChild(style);
+        } else if (!hidden && style) {
+            style.remove();
+        }
+    }
+
+    function addLocalAccountLink(section) {
+        if (!showLocalAccountLink || section.querySelector('.ssoLocalAccountLink')) {
+            return;
+        }
+
+        var link = document.createElement('button');
+        link.type = 'button';
+        link.className = 'ssoLocalAccountLink';
+        link.textContent = 'Use a local account';
+        link.addEventListener('click', function () {
+            localLoginRequested = true;
+            setLocalLoginHidden(false);
+            var manual = document.querySelector('.btnManual');
+            if (manual) {
+                manual.click();
+            }
+            link.remove();
+        });
+        section.appendChild(link);
+    }
+
+    function applyLocalLoginMode(section) {
+        var hide = hideLocalLogin && !localLoginRequested && providers && providers.length > 0;
+        setLocalLoginHidden(hide);
+        if (!section) {
+            return;
+        }
+
+        var existing = section.querySelector('.ssoLocalAccountLink');
+        if (hide && showLocalAccountLink) {
+            addLocalAccountLink(section);
+        } else if (existing) {
+            existing.remove();
+        }
+    }
+
     function render(container) {
         if (!providers || providers.length === 0) {
+            setLocalLoginHidden(false);
             return;
         }
 
         var signature = providers.map(function (p) {
             return p.slug + '|' + p.buttonText + '|' + (p.iconUrl || '');
-        }).join(';');
+        }).join(';') + '|' + hideLocalLogin + '|' + showLocalAccountLink + '|' + localLoginRequested;
 
         var section = container.querySelector('.ssoLoginSection');
         if (section && section.getAttribute('data-signature') === signature) {
+            applyLocalLoginMode(section);
             return;
         }
 
@@ -123,6 +177,8 @@
             });
             section.appendChild(chooser);
         }
+
+        applyLocalLoginMode(section);
     }
 
     function refresh() {
@@ -151,6 +207,8 @@
         }).then(function (data) {
             providers = Array.isArray(data.providers) ? data.providers : [];
             maxInlineButtons = data.maxInlineButtons || 3;
+            hideLocalLogin = data.hideLocalLogin === true;
+            showLocalAccountLink = data.showLocalAccountLink === true;
             if (data.showProviderButtons === false) {
                 providers = [];
             }

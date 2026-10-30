@@ -13,6 +13,7 @@ public sealed class LoginPageStartupFilter : IStartupFilter
     {
         return app =>
         {
+            app.UseMiddleware<SsoOnlyAuthenticationMiddleware>();
             app.UseMiddleware<LoginPageMiddleware>();
             next(app);
         };

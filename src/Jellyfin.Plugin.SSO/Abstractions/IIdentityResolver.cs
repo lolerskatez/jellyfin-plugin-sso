@@ -11,7 +11,13 @@ public interface IIdentityResolver
 {
     Task<IdentityResolution> ResolveLoginAsync(OidcIdentity identity, OidcProviderConfig provider, string remoteIp, CancellationToken cancellationToken = default);
 
-    Task<IdentityResolution> LinkAsync(OidcIdentity identity, OidcProviderConfig provider, Guid jellyfinUserId, CancellationToken cancellationToken = default);
+    Task<IdentityResolution> LinkAsync(
+        OidcIdentity identity,
+        OidcProviderConfig provider,
+        Guid jellyfinUserId,
+        string source = "self",
+        string? actor = null,
+        CancellationToken cancellationToken = default);
 
     Task<bool> UnlinkAsync(Guid jellyfinUserId, string providerId, CancellationToken cancellationToken = default);
 

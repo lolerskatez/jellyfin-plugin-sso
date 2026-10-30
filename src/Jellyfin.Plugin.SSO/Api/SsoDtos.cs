@@ -45,6 +45,16 @@ public sealed class ProvidersResponse
     /// Gets or sets a value indicating whether provider buttons should appear on the login page.
     /// </summary>
     public bool ShowProviderButtons { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the local login form should be hidden.
+    /// </summary>
+    public bool HideLocalLogin { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the login page should offer a local-account fallback link.
+    /// </summary>
+    public bool ShowLocalAccountLink { get; set; }
 }
 
 /// <summary>

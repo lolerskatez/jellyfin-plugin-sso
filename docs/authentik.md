@@ -140,7 +140,21 @@ automatically.
 
 Keep a separate local administrator account as a break-glass account.
 
-## 7. Logout
+## 7. SSO-only login
+
+Enable **Settings → SSO-only login** to block password authentication for
+auto-provisioned SSO users. Add at least one existing Jellyfin administrator to
+the allowlist first; that account is the break-glass login if Authentik is
+unavailable.
+
+- Existing local users remain password-capable in balanced mode.
+- Quick Connect remains available for native clients.
+- API-key password verification remains allowed by default so management apps
+  can verify credentials while linking.
+- The web login page hides the local form and offers a “Use a local account”
+  link when configured.
+
+## 8. Logout
 
 The plugin does not implement OIDC single logout. Logging out of Jellyfin ends
 the Jellyfin session, but the Authentik session remains active.

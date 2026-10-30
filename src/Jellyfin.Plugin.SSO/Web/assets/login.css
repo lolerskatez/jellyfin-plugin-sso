@@ -52,6 +52,22 @@
     object-fit: contain;
 }
 
+.ssoLoginSection .ssoLocalAccountLink {
+    display: block;
+    margin: 0.85em auto 0;
+    padding: 0;
+    color: var(--jf-palette-text-secondary, rgba(255, 255, 255, 0.65));
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: underline;
+}
+
+.ssoLoginSection .ssoLocalAccountLink:hover {
+    color: var(--jf-palette-text-primary, #fff);
+}
+
 .layout-tv .ssoLoginSection {
     display: none;
 }

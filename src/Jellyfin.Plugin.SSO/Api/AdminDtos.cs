@@ -333,6 +333,139 @@ public sealed class AdminSettingsDto
     /// Gets or sets login page settings.
     /// </summary>
     public LoginPageSettings LoginPage { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets SSO-only login settings.
+    /// </summary>
+    public AdminSsoOnlyDto? SsoOnly { get; set; }
+}
+
+/// <summary>
+/// Admin SSO-only settings with display names for the allowlist.
+/// </summary>
+public sealed class AdminSsoOnlyDto
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether the policy is enforced.
+    /// </summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether provisioned users are blocked.
+    /// </summary>
+    public bool BlockProvisionedUsers { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether linked users are blocked.
+    /// </summary>
+    public bool BlockLinkedUsers { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether API-key password checks are allowed.
+    /// </summary>
+    public bool AllowApiKeyPasswordVerification { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the local login form is hidden.
+    /// </summary>
+    public bool HideLocalLogin { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether a local-account link is shown.
+    /// </summary>
+    public bool ShowLocalAccountLink { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets allowed Jellyfin user IDs.
+    /// </summary>
+    public List<Guid> PasswordLoginAllowedUserIds { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets allowed Jellyfin usernames for display and editing.
+    /// </summary>
+    public List<string> PasswordLoginAllowedUsers { get; set; } = [];
+}
+
+/// <summary>
+/// Request to create an external identity link from a trusted integration.
+/// </summary>
+public sealed class CreateLinkRequest
+{
+    /// <summary>
+    /// Gets or sets the provider slug.
+    /// </summary>
+    public string Provider { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the OIDC issuer.
+    /// </summary>
+    public string Issuer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the OIDC subject.
+    /// </summary>
+    public string Subject { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the Jellyfin user ID.
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional username override.
+    /// </summary>
+    public string? Username { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional email.
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional display name.
+    /// </summary>
+    public string? DisplayName { get; set; }
+}
+
+/// <summary>
+/// Password-login policy result for one user.
+/// </summary>
+public sealed class PasswordPolicyDto
+{
+    /// <summary>
+    /// Gets or sets the Jellyfin user ID.
+    /// </summary>
+    public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the username.
+    /// </summary>
+    public string Username { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether password login is allowed.
+    /// </summary>
+    public bool PasswordAllowed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reason code.
+    /// </summary>
+    public string Reason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the policy is enabled.
+    /// </summary>
+    public bool SsoOnlyEnabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user has a provisioned link.
+    /// </summary>
+    public bool Provisioned { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user has any link.
+    /// </summary>
+    public bool Linked { get; set; }
 }
 
 /// <summary>
@@ -374,6 +507,16 @@ public sealed class AdminStatusDto
     /// Gets or sets the number of pending requests.
     /// </summary>
     public int PendingCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the integration API version.
+    /// </summary>
+    public int ApiVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether SSO-only login is enabled.
+    /// </summary>
+    public bool SsoOnlyEnabled { get; set; }
 }
 
 /// <summary>

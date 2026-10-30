@@ -82,6 +82,10 @@
     display: block;
 }
 
+.ssoPanel > .ssoBox + .ssoBox {
+    margin-top: 0.85rem;
+}
+
 .ssoGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
@@ -89,15 +93,49 @@
 }
 
 .ssoBox {
-    padding: 1rem;
+    padding: 1rem 1.1rem;
     border: 1px solid var(--sso-border);
-    border-radius: 0.45rem;
+    border-radius: 0.5rem;
     background: var(--sso-surface);
 }
 
-.ssoBox h2,
-.ssoBox h3 {
+.ssoBox > h2 {
+    margin: 0 0 0.65rem;
+    font-size: 1.35rem;
+    color: var(--sso-text);
+}
+
+.ssoBox > h3 {
+    margin: 0 0 0.55rem;
+    font-size: 1.15rem;
+    color: var(--sso-text);
+}
+
+.ssoBox > p {
+    margin: 0.45rem 0;
+}
+
+.ssoBox > p:first-of-type {
     margin-top: 0;
+}
+
+.ssoBox > p:last-child {
+    margin-bottom: 0;
+}
+
+.ssoBox > .ssoBtn {
+    margin-top: 0.8rem;
+}
+
+.ssoBox > .ssoFormActions {
+    margin-top: 0.8rem;
+}
+
+.ssoFormSection {
+    margin: 0.9rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--sso-border);
+    font-size: 1rem;
     color: var(--sso-text);
 }
 

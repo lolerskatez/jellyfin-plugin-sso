@@ -69,7 +69,8 @@ public sealed class UserProvisioner : IUserProvisioner
                     Email = NullIfEmpty(identity.Email),
                     Username = username,
                     DisplayName = NullIfEmpty(identity.DisplayName),
-                    Source = source
+                    Source = source,
+                    Provisioned = true
                 },
                 cancellationToken).ConfigureAwait(false);
 

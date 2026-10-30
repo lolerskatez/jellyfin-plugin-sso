@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using Jellyfin.Plugin.SSO.Configuration;
@@ -68,7 +69,7 @@ public sealed class LoginPageMiddleware
         if (!html.Contains(Marker, StringComparison.Ordinal))
         {
             var assetBase = HtmlEncoder.Default.Encode(context.Request.PathBase.Add("/sso/assets").Value ?? "/sso/assets");
-            var assetVersion = HtmlEncoder.Default.Encode(typeof(LoginPageMiddleware).Assembly.GetName().Version?.ToString() ?? "1");
+            var assetVersion = HtmlEncoder.Default.Encode(GetAssetVersion());
             var css = $"    <link rel=\"stylesheet\" href=\"{assetBase}/login.css?v={assetVersion}\">\n";
             var script = $"    <script src=\"{assetBase}/login.js?v={assetVersion}\" defer></script>\n";
 
@@ -101,6 +102,26 @@ public sealed class LoginPageMiddleware
         }
 
         await context.Response.Body.WriteAsync(bytes, context.RequestAborted).ConfigureAwait(false);
+    }
+
+    private static string GetAssetVersion()
+    {
+        var assembly = typeof(LoginPageMiddleware).Assembly;
+        var version = assembly.GetName().Version?.ToString() ?? "1";
+        try
+        {
+            var location = assembly.Location;
+            if (!string.IsNullOrWhiteSpace(location) && File.Exists(location))
+            {
+                version += "." + File.GetLastWriteTimeUtc(location).Ticks.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+        catch (IOException)
+        {
+            // Fall back to the assembly version if the file timestamp is unavailable.
+        }
+
+        return version;
     }
 
     private static bool IsWebIndexRequest(PathString path)

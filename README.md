@@ -17,6 +17,9 @@ parental controls, and every other authorization decision.
 - Optional group/role mapping for administrator, library, and Live TV access
 - Normal Jellyfin device tokens through `ISessionManager.AuthenticateDirect`
 - Quick Connect helper page for Android/iOS/TV clients
+- Optional SSO-only password policy with a break-glass allowlist and a
+  web-login fallback link
+- Admin link and password-policy API for trusted management integrations
 - Admin page with provider configuration, discovery tests, links, approvals,
   audit log, and setup status
 - JSON-backed link and audit stores; no Jellyfin database changes
@@ -157,6 +160,8 @@ The client receives a normal Jellyfin token and works exactly as before.
   [docs/configuration.md#logout](docs/configuration.md#logout).
 - The provider client secret is stored in Jellyfin's plugin configuration, like
   other Jellyfin plugins. Protect the configuration directory.
+- Native clients do not render an SSO button. SSO-only users must use Quick
+  Connect or be placed on the password allowlist.
 - Multi-instance Jellyfin is not supported by the in-memory state/ticket stores.
 
 ## Development status

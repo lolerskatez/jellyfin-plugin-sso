@@ -248,6 +248,8 @@ public sealed class IdentityResolver : IIdentityResolver
         OidcIdentity identity,
         OidcProviderConfig provider,
         Guid jellyfinUserId,
+        string source = "self",
+        string? actor = null,
         CancellationToken cancellationToken = default)
     {
         var existing = await _linkStore.FindAsync(provider.Slug, identity.Issuer, identity.Subject, cancellationToken)
@@ -285,11 +287,15 @@ public sealed class IdentityResolver : IIdentityResolver
                 Email = NullIfEmpty(identity.Email),
                 Username = user.Username,
                 DisplayName = NullIfEmpty(identity.DisplayName),
-                Source = "self"
+                Source = string.IsNullOrWhiteSpace(source) ? "self" : source,
+                Provisioned = false
             },
             cancellationToken).ConfigureAwait(false);
 
-        await AuditAsync("LinkCreated", provider, identity, jellyfinUserId, "success", "Linked by user", cancellationToken)
+        var detail = string.IsNullOrWhiteSpace(actor)
+            ? "Linked by user"
+            : "Linked by " + actor;
+        await AuditAsync("LinkCreated", provider, identity, jellyfinUserId, "success", detail, cancellationToken)
             .ConfigureAwait(false);
 
         return new IdentityResolution { Status = IdentityResolutionStatus.Success, User = user };
@@ -348,7 +354,13 @@ public sealed class IdentityResolver : IIdentityResolver
 
         if (jellyfinUserId is not null)
         {
-            var result = await LinkAsync(identity, provider, jellyfinUserId.Value, cancellationToken).ConfigureAwait(false);
+            var result = await LinkAsync(
+                identity,
+                provider,
+                jellyfinUserId.Value,
+                source: "admin",
+                actor: "administrator",
+                cancellationToken: cancellationToken).ConfigureAwait(false);
             if (result.Status == IdentityResolutionStatus.Success)
             {
                 await _pendingStore.ApproveAsync(pendingId, cancellationToken).ConfigureAwait(false);
