@@ -132,6 +132,12 @@ public static class PluginConfigurationMigrator
             changed = true;
         }
 
+        if (configuration.Roles.AdminRoles is null)
+        {
+            configuration.Roles.AdminRoles = [];
+            changed = true;
+        }
+
         if (configuration.LoginPage is null)
         {
             configuration.LoginPage = new LoginPageSettings();

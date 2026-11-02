@@ -21,6 +21,12 @@ public class RoleMappingSettings
     public List<string> LiveTvManagementRoles { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets administrator groups that apply to every provider.
+    /// Provider-specific administrator groups are applied as well.
+    /// </summary>
+    public List<string> AdminRoles { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets a value indicating whether a mapped role is required for access.
     /// </summary>
     public bool RequireRoleForAccess { get; set; }

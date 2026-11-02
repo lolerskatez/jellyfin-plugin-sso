@@ -31,7 +31,7 @@ Then add the provider in **Dashboard → Plugins → Single Sign-On**:
 - Client secret: `test-secret`
 - Scopes: `openid profile email groups`
 - Group claim paths: `groups`
-- Admin roles: `jellyfin-admins`
+- Administrator groups: `jellyfin-admins`
 - Required roles: `jellyfin-users`
 - Allow HTTP: enabled (test only)
 - Token endpoint authentication: `client_secret_post`

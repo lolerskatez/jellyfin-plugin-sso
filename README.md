@@ -101,8 +101,10 @@ jprm plugin build .
    - Scopes: `openid profile email`
    - Username claim: `preferred_username`
    - Group paths: `groups`
-   - Admin roles: `jellyfin-admins`
+   - Administrator groups: `jellyfin-admins`
    - Required roles: `jellyfin-users` (optional)
+   - Enable **Allow new users to become administrators from claims** if that
+     group should grant administrator rights
 4. Save and run **Test discovery**.
 5. Copy the displayed redirect URI into Authentik exactly.
 6. Reload the Jellyfin login page.

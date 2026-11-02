@@ -72,6 +72,7 @@ public sealed class PolicyMapper : IPolicyMapper
     {
         var config = _config.Current;
         var groups = identity.Groups;
+        var adminRoles = GetAdminRoles(config, provider);
 
         var required = new List<string>();
         required.AddRange(provider.RequiredRoles);
@@ -83,12 +84,29 @@ public sealed class PolicyMapper : IPolicyMapper
         var hasAccess = required.Count == 0 || MatchesAny(groups, required);
         if (groups.Count == 0
             && string.Equals(config.Provisioning.MissingRoleBehavior, "Deny", StringComparison.OrdinalIgnoreCase)
-            && (provider.AdminRoles.Count > 0
+            && (adminRoles.Count > 0
                 || config.Roles.FolderRoles.Count > 0
                 || config.Roles.LiveTvRoles.Count > 0
                 || config.Roles.LiveTvManagementRoles.Count > 0))
         {
             hasAccess = false;
+        }
+
+        var isAdmin = MatchesAny(groups, adminRoles);
+        _logger.LogDebug(
+            "Provider {Provider}: extracted {GroupCount} group(s); {AdminRoleCount} administrator group(s) configured; administrator match: {IsAdmin}.",
+            provider.Slug,
+            groups.Count,
+            adminRoles.Count,
+            isAdmin);
+
+        if (groups.Count == 0
+            && adminRoles.Count > 0
+            && (config.Provisioning.AllowAdminProvisioning || provider.AllowAdminProvisioning))
+        {
+            _logger.LogWarning(
+                "Provider {Provider} returned no group values, but administrator groups are configured. Check the group claim paths and the provider's groups scope.",
+                provider.Slug);
         }
 
         var folders = new List<Guid>();
@@ -107,7 +125,7 @@ public sealed class PolicyMapper : IPolicyMapper
         return new RoleEvaluation
         {
             HasAccess = hasAccess,
-            IsAdmin = MatchesAny(groups, provider.AdminRoles),
+            IsAdmin = isAdmin,
             HasFolderMapping = hasFolderMapping,
             Folders = folders.Distinct().ToArray(),
             LiveTv = MatchesAny(groups, config.Roles.LiveTvRoles),
@@ -132,8 +150,16 @@ public sealed class PolicyMapper : IPolicyMapper
         // password and any administrator-set local password work normally.
         policy.AuthenticationProviderId = user.AuthenticationProviderId;
         policy.PasswordResetProviderId = user.PasswordResetProviderId;
-        policy.IsAdministrator = evaluation.IsAdmin
-            && (config.Provisioning.AllowAdminProvisioning || provider.AllowAdminProvisioning);
+        var adminProvisioningEnabled = config.Provisioning.AllowAdminProvisioning || provider.AllowAdminProvisioning;
+        if (evaluation.IsAdmin && !adminProvisioningEnabled)
+        {
+            _logger.LogWarning(
+                "SSO identity for {Username} matches an administrator group for provider {Provider}, but administrator provisioning is disabled. The user will not be an administrator.",
+                user.Username,
+                provider.Slug);
+        }
+
+        policy.IsAdministrator = evaluation.IsAdmin && adminProvisioningEnabled;
         policy.IsHidden = config.Provisioning.HideNewUsers;
         policy.IsDisabled = false;
         policy.EnableRemoteAccess = config.Provisioning.AllowRemoteAccess;
@@ -173,9 +199,10 @@ public sealed class PolicyMapper : IPolicyMapper
     {
         var config = _config.Current;
         var policy = _userManager.GetUserDto(user).Policy;
+        var adminRoles = GetAdminRoles(config, provider);
         var changed = false;
 
-        if (provider.AdminRoles.Count > 0 && policy.IsAdministrator != evaluation.IsAdmin)
+        if (adminRoles.Count > 0 && policy.IsAdministrator != evaluation.IsAdmin)
         {
             if (!evaluation.IsAdmin && config.Roles.ProtectLastAdmin && CountAdministrators() <= 1)
             {
@@ -243,6 +270,27 @@ public sealed class PolicyMapper : IPolicyMapper
     private int CountAdministrators()
     {
         return _userManager.GetUsers().Count(x => x.HasPermission(PermissionKind.IsAdministrator));
+    }
+
+    private static IReadOnlyList<string> GetAdminRoles(PluginConfiguration config, OidcProviderConfig provider)
+    {
+        var globalRoles = config.Roles.AdminRoles ?? [];
+        var providerRoles = provider.AdminRoles ?? [];
+
+        if (globalRoles.Count == 0)
+        {
+            return providerRoles;
+        }
+
+        if (providerRoles.Count == 0)
+        {
+            return globalRoles;
+        }
+
+        return providerRoles
+            .Concat(globalRoles)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static bool MatchesAny(IReadOnlyList<string> groups, IReadOnlyList<string> roles)

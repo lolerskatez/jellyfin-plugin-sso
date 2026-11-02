@@ -353,6 +353,10 @@
         var emailClaim = input(get(p, 'emailClaim') || 'email');
         var groupClaims = input((get(p, 'groupClaimPaths') || ['groups']).join(', '));
         var adminRoles = input((get(p, 'adminRoles') || []).join(', '));
+        var adminRolesHelp = el('div', {
+            className: 'ssoMuted ssoFieldHelp',
+            text: 'Groups from this provider that grant Jellyfin administrator. Global administrator groups from Settings are also applied.'
+        });
         var requiredRoles = input((get(p, 'requiredRoles') || []).join(', '));
         var allowedDomains = input((get(p, 'allowedEmailDomains') || []).join(', '));
         var responseMode = select(get(p, 'responseMode') || 'query', [
@@ -391,6 +395,10 @@
         var allowHttp = checkbox('Allow HTTP (development only)', !!get(p, 'allowHttp'));
         var symmetric = checkbox('Allow symmetric ID token signing', !!get(p, 'allowSymmetricSigning'));
         var adminProvisioning = checkbox('Allow new users to become administrators from claims', !!get(p, 'allowAdminProvisioning'));
+        var adminProvisioningHelp = el('div', {
+            className: 'ssoMuted ssoFieldHelp',
+            text: 'Applies when a user is first provisioned. Existing accounts are updated only when role syncing is enabled.'
+        });
 
         [
             field('Slug (URL-safe, permanent)', slug),
@@ -413,7 +421,8 @@
             field('Display name claim', displayNameClaim),
             field('Email claim', emailClaim),
             field('Group claim paths (comma separated)', groupClaims),
-            field('Admin roles (comma separated)', adminRoles),
+            field('Administrator groups (comma separated)', adminRoles),
+            adminRolesHelp,
             field('Required roles (comma separated)', requiredRoles),
             field('Allowed email domains (comma separated)', allowedDomains),
             field('Response mode', responseMode),
@@ -428,7 +437,8 @@
             verifiedEmail,
             allowHttp,
             symmetric,
-            adminProvisioning
+            adminProvisioning,
+            adminProvisioningHelp
         ].forEach(function (node) { form.appendChild(node); });
 
         var save = el('button', { className: 'ssoBtn', text: 'Save provider' });
@@ -521,6 +531,15 @@
         var autoProvision = checkbox('Auto-provision new users', get(provisioning, 'autoProvisionNewUsers') !== false);
         var requireApproval = checkbox('Require administrator approval for new users', !!get(provisioning, 'requireAdminApproval'));
         var allowAdminProvisioning = checkbox('Allow claim-based administrator provisioning', !!get(provisioning, 'allowAdminProvisioning'));
+        var adminProvisioningHelp = el('div', {
+            className: 'ssoMuted ssoFieldHelp',
+            text: 'Applies to newly provisioned users. Enable “Sync roles on every login” to update existing accounts.'
+        });
+        var adminRoles = input((get(roles, 'adminRoles') || []).join(', '));
+        var adminRolesHelp = el('div', {
+            className: 'ssoMuted ssoFieldHelp',
+            text: 'Groups that grant administrator for every provider. Provider-specific administrator groups are also applied.'
+        });
         var hideNewUsers = checkbox('Hide new users from the login user picker', get(provisioning, 'hideNewUsers') !== false);
         var allowAllFolders = checkbox('Give new users access to all libraries', get(provisioning, 'allowAllFolders') !== false);
         var allowDownloads = checkbox('Allow downloads for new users', get(provisioning, 'allowDownloads') !== false);
@@ -562,6 +581,9 @@
             autoProvision,
             requireApproval,
             allowAdminProvisioning,
+            adminProvisioningHelp,
+            field('Global administrator groups (comma separated)', adminRoles),
+            adminRolesHelp,
             hideNewUsers,
             allowAllFolders,
             allowDownloads,
@@ -625,6 +647,7 @@
                     folderRoles: get(roles, 'folderRoles') || [],
                     liveTvRoles: get(roles, 'liveTvRoles') || [],
                     liveTvManagementRoles: get(roles, 'liveTvManagementRoles') || [],
+                    adminRoles: split(adminRoles.value),
                     requireRoleForAccess: requireRole.querySelector('input').checked,
                     requiredRoles: get(roles, 'requiredRoles') || [],
                     protectLastAdmin: protectLastAdmin.querySelector('input').checked

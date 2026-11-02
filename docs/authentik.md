@@ -86,7 +86,7 @@ Open **Dashboard → Plugins → Single Sign-On → Providers → Add provider**
 | Display name claim | `name` |
 | Email claim | `email` |
 | Group claim paths | `groups` |
-| Admin roles | `jellyfin-admins` (optional) |
+| Administrator groups | `jellyfin-admins` (optional) |
 | Required roles | `jellyfin-users` (optional) |
 | Response mode | `query` |
 | Token endpoint authentication | `client_secret_post` |
@@ -111,7 +111,7 @@ Then open the Jellyfin login page in a private browser window and click
 | User | Groups | Expected |
 |---|---|---|
 | `alice` | `jellyfin-users` | normal user, auto-provisioned |
-| `admin` | `jellyfin-users`, `jellyfin-admins` | administrator after an admin explicitly enables admin provisioning or links the account |
+| `admin` | `jellyfin-users`, `jellyfin-admins` | administrator after an admin explicitly enables admin provisioning; existing accounts need role syncing or re-provisioning |
 | `bob` | no `jellyfin-users` | denied when a required role is configured |
 
 Group matching is case-insensitive and exact. Authentik group names may contain
@@ -130,8 +130,10 @@ automatically.
 
 ## 6. Role mapping
 
-- **Admin roles** grant `IsAdministrator`. New-user admin provisioning is off by
-  default. Enable it only if Authentik and the group mapping are trusted.
+- **Administrator groups** grant `IsAdministrator`. They can be set per provider
+  or globally in Settings; both lists are combined. New-user admin provisioning
+  is off by default. Enable it only if Authentik and the group mapping are
+  trusted.
 - **Required roles** deny login if the user is not in at least one listed group.
 - Role syncing is off by default. Turning it on applies mapped roles on every
   login; the last-administrator guard prevents removing the final admin.

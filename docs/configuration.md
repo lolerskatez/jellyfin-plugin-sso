@@ -171,7 +171,7 @@ Recommended values for Authentik:
 | Display name claim | `name` |
 | Email claim | `email` |
 | Group claim paths | `groups` |
-| Admin roles | e.g. `jellyfin-admins` (optional) |
+| Administrator groups | e.g. `jellyfin-admins` (optional) |
 | Required roles | e.g. `jellyfin-users` (optional) |
 | Response mode | `query (recommended)` |
 | Token endpoint authentication | `client_secret_post` |
@@ -197,8 +197,9 @@ that provider. Copy it into Authentik if you have not already.
   custom scope only if your provider emits groups under a different scope.
 - **Username claim** — `preferred_username` is the Authentik username.
 - **Group claim paths** — comma-separated JSON paths. `groups` is the default.
-- **Admin roles / Required roles** — comma-separated group names; matching is
-  case-insensitive and exact.
+- **Administrator groups / Required roles** — comma-separated group names;
+  matching is case-insensitive and exact. Administrator groups configured in
+  Settings apply to every provider in addition to the provider-specific list.
 - **Response mode** — keep `query` unless your provider requires `form_post`.
 - **Token endpoint authentication** — `client_secret_post` for a confidential
   Authentik client. Use `client_secret_basic` if your provider requires HTTP
@@ -282,14 +283,20 @@ Administrators can review and revoke links under **Single Sign-On → Links**.
 
 ## Step 6 — Roles and policy
 
-- **Admin roles** grant Jellyfin administrator rights when the claim contains
-  one of the listed groups. New-user admin provisioning is disabled by default;
-  enable **Allow new users to become administrators from claims** only when the
-  identity provider and group mapping are trusted.
+- **Administrator groups** grant Jellyfin administrator rights when the claim
+  contains one of the listed groups. Groups can be configured per provider
+  (**Providers → Edit → Administrator groups**) and globally in **Settings →
+  Global administrator groups**; the two lists are combined. New-user admin
+  provisioning is disabled by default; enable **Allow new users to become
+  administrators from claims** / **Allow claim-based administrator provisioning**
+  only when the identity provider and group mapping are trusted.
 - **Required roles** deny login when the user is not in at least one listed
   group. Leave empty to allow every authenticated user.
 - **Sync roles on every login** applies the mapped roles at each login. The
   last-administrator guard prevents removing the final Jellyfin administrator.
+  Accounts that were provisioned before the administrator mapping was configured
+  are not promoted on login unless role syncing is enabled; alternatively,
+  unlink and delete the account so it is provisioned again.
 - **Missing role behavior** controls what happens when a previously mapped role
   disappears: keep the existing policy, clear mapped permissions, or deny login.
 - Group names are case-insensitive and must match exactly, including spaces.

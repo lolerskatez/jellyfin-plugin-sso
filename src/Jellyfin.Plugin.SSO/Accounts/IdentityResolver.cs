@@ -152,6 +152,16 @@ public sealed class IdentityResolver : IIdentityResolver
                 return Denied("account_disabled", "This Jellyfin account is disabled.");
             }
 
+            if (!_policyMapper.ShouldSyncRoles(provider)
+                && roles.IsAdmin
+                && !linkedUser.HasPermission(PermissionKind.IsAdministrator))
+            {
+                _logger.LogInformation(
+                    "SSO identity for {Username} matches an administrator group for provider {Provider}, but role syncing is disabled. The existing Jellyfin policy was not changed.",
+                    linkedUser.Username,
+                    provider.Slug);
+            }
+
             if (_policyMapper.ShouldSyncRoles(provider)
                 && (identity.Groups.Count > 0
                     || !string.Equals(config.Provisioning.MissingRoleBehavior, "Keep", StringComparison.OrdinalIgnoreCase)))

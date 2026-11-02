@@ -57,6 +57,46 @@ public class UsernameResolverTests
     }
 }
 
+public class PolicyMapperTests
+{
+    [Fact]
+    public void GlobalAdministratorGroupGrantsAdmin()
+    {
+        var configuration = new PluginConfiguration();
+        configuration.Roles.AdminRoles = ["administrators"];
+        var mapper = new PolicyMapper(
+            null!,
+            new FakeConfigAccessor(configuration),
+            NullLogger<PolicyMapper>.Instance);
+
+        var evaluation = mapper.Evaluate(
+            new OidcIdentity { Groups = ["Administrators"] },
+            new OidcProviderConfig { Slug = "authentik" });
+
+        Assert.True(evaluation.IsAdmin);
+    }
+
+    [Fact]
+    public void ProviderAndGlobalAdministratorGroupsAreCombined()
+    {
+        var configuration = new PluginConfiguration();
+        configuration.Roles.AdminRoles = ["global-admins"];
+        var mapper = new PolicyMapper(
+            null!,
+            new FakeConfigAccessor(configuration),
+            NullLogger<PolicyMapper>.Instance);
+        var provider = new OidcProviderConfig
+        {
+            Slug = "authentik",
+            AdminRoles = ["provider-admins"]
+        };
+
+        Assert.True(mapper.Evaluate(new OidcIdentity { Groups = ["provider-admins"] }, provider).IsAdmin);
+        Assert.True(mapper.Evaluate(new OidcIdentity { Groups = ["global-admins"] }, provider).IsAdmin);
+        Assert.False(mapper.Evaluate(new OidcIdentity { Groups = ["other"] }, provider).IsAdmin);
+    }
+}
+
 public class SsoUrlBuilderTests
 {
     [Theory]
@@ -199,6 +239,19 @@ public class PluginConfigurationMigratorTests
         Assert.NotNull(configuration.Providers[0].AdditionalAuthorizationParameters);
         Assert.False(PluginConfigurationMigrator.Migrate(configuration));
     }
+
+    [Fact]
+    public void NormalizesGlobalAdministratorRoles()
+    {
+        var configuration = new PluginConfiguration
+        {
+            SchemaVersion = PluginConfigurationMigrator.CurrentVersion
+        };
+        configuration.Roles.AdminRoles = null!;
+
+        Assert.True(PluginConfigurationMigrator.Migrate(configuration));
+        Assert.NotNull(configuration.Roles.AdminRoles);
+    }
 }
 
 public class AuthorizationStateStoreTests
@@ -256,7 +309,12 @@ public class LoginTicketStoreTests
 
 internal sealed class FakeConfigAccessor : IPluginConfigAccessor
 {
-    public PluginConfiguration Current { get; } = new();
+    public FakeConfigAccessor(PluginConfiguration? configuration = null)
+    {
+        Current = configuration ?? new PluginConfiguration();
+    }
+
+    public PluginConfiguration Current { get; }
 
     public void Save()
     {
