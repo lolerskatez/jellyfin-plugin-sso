@@ -60,7 +60,8 @@
             });
         }
 
-        window.location.assign(apiBase + '/sso/logout?provider=' + encodeURIComponent(session.provider));
+        window.location.assign(apiBase + '/sso/logout?provider=' + encodeURIComponent(session.provider)
+            + (session.idToken ? '&id_token_hint=' + encodeURIComponent(session.idToken) : ''));
     }
 
     function isLogoutClick(target) {

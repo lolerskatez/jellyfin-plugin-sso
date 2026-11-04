@@ -145,6 +145,37 @@ public class SsoUrlBuilderTests
 
         Assert.Equal("https://example.com/logged-out", uri);
     }
+
+    [Fact]
+    public void IncludesIdTokenHintAndPostLogoutRedirect()
+    {
+        var url = SsoUrlBuilder.GetEndSessionUrl(
+            "https://auth.example.com/application/o/squid/end-session/",
+            "client-id",
+            "https://jellyfin.example.com/web/index.html",
+            "header.payload.signature");
+
+        Assert.Contains("client_id=client-id", url, StringComparison.Ordinal);
+        Assert.Contains("id_token_hint=header.payload.signature", url, StringComparison.Ordinal);
+        Assert.Contains(
+            "post_logout_redirect_uri=https%3A%2F%2Fjellyfin.example.com%2Fweb%2Findex.html",
+            url,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OmitsPostLogoutRedirectWithoutIdTokenHint()
+    {
+        var url = SsoUrlBuilder.GetEndSessionUrl(
+            "https://auth.example.com/application/o/squid/end-session/",
+            "client-id",
+            "https://jellyfin.example.com/web/index.html",
+            null);
+
+        Assert.Contains("client_id=client-id", url, StringComparison.Ordinal);
+        Assert.DoesNotContain("id_token_hint", url, StringComparison.Ordinal);
+        Assert.DoesNotContain("post_logout_redirect_uri", url, StringComparison.Ordinal);
+    }
 }
 
 public class OidcTokenValidatorTests
@@ -286,7 +317,7 @@ public class LoginTicketStoreTests
     public void ConsumesTicketOnceAndRequiresBinding()
     {
         var store = new LoginTicketStore(new FakeConfigAccessor());
-        var (ticket, binding) = store.Create(Guid.NewGuid(), "authentik", "/web/");
+        var (ticket, binding) = store.Create(Guid.NewGuid(), "authentik", "/web/", "id-token");
 
         Assert.Null(store.Consume(ticket, "wrong"));
         Assert.Null(store.Consume(ticket, binding));
@@ -297,12 +328,13 @@ public class LoginTicketStoreTests
     {
         var store = new LoginTicketStore(new FakeConfigAccessor());
         var userId = Guid.NewGuid();
-        var (ticket, binding) = store.Create(userId, "authentik", "/web/");
+        var (ticket, binding) = store.Create(userId, "authentik", "/web/", "id-token");
 
         var consumed = store.Consume(ticket, binding);
 
         Assert.NotNull(consumed);
         Assert.Equal(userId, consumed!.JellyfinUserId);
+        Assert.Equal("id-token", consumed.IdToken);
         Assert.Null(store.Consume(ticket, binding));
     }
 }

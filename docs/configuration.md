@@ -22,10 +22,10 @@ You need:
 |---|---|
 | Public base URL | Detected from the browser request, or **Settings → Public base URL override** |
 | Callback / redirect URI | `<public base URL>/sso/callback/<slug>` |
-| Post-logout landing page | `<public base URL>/web/index.html#/login` |
+| Post-logout landing page | `<public base URL>/web/index.html` |
 | Discovery document | `<issuer>/.well-known/openid-configuration` |
 | Authorization, token, UserInfo, JWKS endpoints | Read automatically from the discovery document |
-| End-session (logout) endpoint | Published in discovery; used manually for logout today |
+| End-session (logout) endpoint | Read automatically from the discovery document and used for RP-initiated logout |
 
 The plugin only needs the **issuer** and the **client credentials**. It fetches
 the authorization, token, UserInfo, JWKS, and end-session endpoints from the
@@ -136,7 +136,7 @@ value, not a value copied from an older example.
 ### Post-logout redirect URI (optional)
 
 If you want Authentik to return users to Jellyfin after an Authentik logout, add
-the Jellyfin login page to the provider's redirect URIs:
+the plugin's post-logout landing page to the provider's redirect URIs:
 
 - **Authentik 2026.5 and newer:** add a redirect URI with type **Post Logout**.
 - **Older versions:** this entry type may not exist; upgrade Authentik or skip
@@ -145,8 +145,10 @@ the Jellyfin login page to the provider's redirect URIs:
 Value:
 
 ```text
-<public base URL>/web/index.html#/login
+<public base URL>/web/index.html
 ```
+
+Use the exact URI shown on the plugin's provider card, without a fragment.
 
 ## Step 3 — Add the provider in Jellyfin
 
@@ -369,7 +371,7 @@ When a user signs out from the Jellyfin user menu or the settings page:
 1. The plugin revokes the Jellyfin session and clears the browser credentials.
 2. The browser is redirected to `/sso/logout?provider=<slug>`.
 3. The plugin redirects to the provider's discovered `end_session_endpoint`
-   with `client_id` and `post_logout_redirect_uri`.
+   with `client_id`, `id_token_hint`, and `post_logout_redirect_uri`.
 4. The identity provider ends its session and returns the browser to the
    configured post-logout URL.
 
@@ -403,11 +405,14 @@ add a fragment unless your provider explicitly allows it.
 - Forced session expiry, token revocation, or deleting a session in Jellyfin
   does not trigger identity-provider logout.
 - Front-channel and back-channel logout are not implemented.
-- The plugin sends `client_id` but not `id_token_hint`. This works with Authentik;
-  other providers may require an `id_token_hint` for RP-initiated logout.
+- The plugin sends `client_id` and the ID token as `id_token_hint`. Strict
+  providers such as Authentik require the hint when a post-logout redirect URI
+  is registered. The token is kept in the browser's `sso_session` storage and
+  only used for logout.
 - Sessions created before upgrading to a plugin version with logout support do
-  not have the SSO marker. Sign in through SSO again to enable logout redirect
-  for that browser.
+  not have the SSO marker. Sessions created before 0.1.0.8 have the marker but
+  not the ID token. Sign in through SSO again to enable logout redirect for that
+  browser.
 
 ### Manual logout
 
@@ -419,7 +424,8 @@ The endpoint can also be opened directly:
 
 If no provider is specified, the first enabled provider is used. It only
 performs the identity-provider redirect; clearing the Jellyfin session is the
-web client's responsibility.
+web client's responsibility. The direct URL has no `id_token_hint`, so the
+provider shows its own logout page instead of returning to Jellyfin.
 
 ### Sign out of everything
 
@@ -445,6 +451,7 @@ plugin version, so Authentik cannot terminate a Jellyfin session directly.
 | Login button missing | Hard-refresh the web client. Check **Login page injection** on the status page. External web clients need the branding fallback from the Settings tab. |
 | Groups missing / admin not granted | Confirm the provider returns `groups` (Authentik's `profile` scope does by default). Check **Group claim paths**, then sign in again. |
 | Always signed in without a prompt | The Authentik session cookie is still active. Use the end-session URL above. |
+| Bad Request on logout | Authentik requires `id_token_hint` when a post-logout redirect URI is registered. Upgrade to 0.1.0.8 or later and sign in through SSO again, or remove the Post Logout redirect URI from Authentik. |
 | Approval queue grows | **Require administrator approval for new users** is on, or usernames collide with existing Jellyfin users. Review **Pending**. |
 | `state` expired | The login took longer than the state lifetime (default 10 minutes). Start again. |
 | Reverse proxy issues | Set **Public base URL override** to the external URL and forward `Host` / `X-Forwarded-*` headers correctly. |

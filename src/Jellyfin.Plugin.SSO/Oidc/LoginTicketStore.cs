@@ -37,6 +37,11 @@ public sealed class LoginTicket
     public string ReturnUrl { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the ID token issued for this login, used as the logout hint.
+    /// </summary>
+    public string IdToken { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the expiry.
     /// </summary>
     public DateTimeOffset ExpiresAt { get; set; }
@@ -62,7 +67,7 @@ public sealed class LoginTicketStore
     /// <summary>
     /// Creates a ticket and browser binding.
     /// </summary>
-    public (string Ticket, string Binding) Create(Guid userId, string providerId, string returnUrl)
+    public (string Ticket, string Binding) Create(Guid userId, string providerId, string returnUrl, string idToken)
     {
         Cleanup();
 
@@ -77,6 +82,7 @@ public sealed class LoginTicketStore
             JellyfinUserId = userId,
             ProviderId = providerId,
             ReturnUrl = returnUrl,
+            IdToken = idToken ?? string.Empty,
             ExpiresAt = DateTimeOffset.UtcNow.Add(lifetime)
         };
 

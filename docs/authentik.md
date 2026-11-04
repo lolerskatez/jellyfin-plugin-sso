@@ -59,8 +59,14 @@ To have Authentik return users to Jellyfin after a logout, add a **Post Logout**
 redirect URI (Authentik 2026.5+):
 
 ```text
-https://jellyfin.example.com/web/index.html#/login
+https://jellyfin.example.com/web/index.html
 ```
+
+Use the exact URI shown on the plugin's provider card. Do not add a fragment:
+Authentik compares the post-logout URI byte for byte and rejects a registered
+`#/login` fragment when the plugin sends the plain page URL. This redirect type
+requires an `id_token_hint`, which the plugin sends for sessions created on
+version 0.1.0.8 or later.
 
 On older Authentik versions this redirect type may not be available. The
 Jellyfin session still ends; Authentik will show its own logout page.
@@ -163,8 +169,8 @@ through SSO. Signing out from the user menu or settings page:
 
 1. Revokes the Jellyfin session and clears browser credentials.
 2. Redirects to the plugin’s `/sso/logout` endpoint.
-3. Redirects to Authentik’s `end_session_endpoint` with `client_id` and
-   `post_logout_redirect_uri`.
+3. Redirects to Authentik’s `end_session_endpoint` with `client_id`,
+   `id_token_hint`, and `post_logout_redirect_uri`.
 4. Authentik ends its session and returns to the Jellyfin web index.
 
 Configure the destination under **Jellyfin → Single Sign-On → Providers →
@@ -177,11 +183,16 @@ https://jellyfin.example.com/web/index.html
 The provider card displays the effective **Post-logout URI**. Add that exact URI
 to the Authentik provider as a **Post Logout** redirect URI (Authentik 2026.5+).
 
+Authentik requires `id_token_hint` whenever a post-logout redirect URI is
+registered. The plugin stores the ID token from the sign-in in the browser and
+sends it only to the end-session endpoint. Sessions created before plugin
+version 0.1.0.8 do not have it; sign in through SSO again to enable the redirect.
+
 Notes:
 
 - Local password sessions and native client sessions do not trigger Authentik
   logout.
-- The plugin sends `client_id`, not `id_token_hint`.
+- The plugin sends `client_id` and `id_token_hint`.
 - Sessions created before the logout feature was installed do not have the SSO
   marker; sign in through SSO again.
 
@@ -206,3 +217,8 @@ an **Invalidation Flow** that includes the **User Logout** stage (for example
   hosted web clients, use the branding fallback.
 - **Immediately signed in again after logout**: the Authentik session is still
   active. Use the end-session URL above.
+- **Bad Request on logout**: Authentik shows “The request is otherwise
+  malformed” when a post-logout redirect URI is sent without an `id_token_hint`.
+  Upgrade to plugin 0.1.0.8 or later, sign in through SSO again, and retry. As a
+  fallback, remove the Post Logout redirect URI from the Authentik provider and
+  the plugin, which makes Authentik show its own logout page.

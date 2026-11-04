@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.SSO.Api;
@@ -100,7 +99,10 @@ public sealed class SsoAuthController : SsoControllerBase
     [HttpGet("logout")]
     [AllowAnonymous]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Logout([FromQuery] string? provider, CancellationToken cancellationToken)
+    public async Task<IActionResult> Logout(
+        [FromQuery] string? provider,
+        [FromQuery(Name = "id_token_hint")] string? idTokenHint,
+        CancellationToken cancellationToken)
     {
         var config = Configuration;
         var providerConfig = !string.IsNullOrWhiteSpace(provider) ? FindProvider(provider) : null;
@@ -126,13 +128,11 @@ public sealed class SsoAuthController : SsoControllerBase
                 return Redirect(returnUri);
             }
 
-            var endSessionUrl = QueryHelpers.AddQueryString(
+            var endSessionUrl = SsoUrlBuilder.GetEndSessionUrl(
                 discovery.EndSessionEndpoint,
-                new Dictionary<string, string?>
-                {
-                    ["client_id"] = providerConfig.ClientId,
-                    ["post_logout_redirect_uri"] = returnUri
-                });
+                providerConfig.ClientId,
+                returnUri,
+                idTokenHint);
 
             _logger.LogInformation("Redirecting to OIDC end-session for provider {Provider}.", providerConfig.Slug);
             return Redirect(endSessionUrl);
@@ -305,7 +305,8 @@ public sealed class SsoAuthController : SsoControllerBase
             var (ticket, binding) = _ticketStore.Create(
                 result.User.Id,
                 providerConfig.Slug,
-                state.ReturnUrl);
+                state.ReturnUrl,
+                token.IdToken);
 
             SsoCookieWriter.Write(
                 Response,
@@ -390,7 +391,8 @@ public sealed class SsoAuthController : SsoControllerBase
                 ServerName = _applicationHost.FriendlyName,
                 User = new SsoUserDto { Id = result.User.Id, Name = result.User.Name },
                 ReturnUrl = SsoUrlBuilder.NormalizeReturnUrl(ticket.ReturnUrl),
-                ProviderId = ticket.ProviderId
+                ProviderId = ticket.ProviderId,
+                IdToken = ticket.IdToken
             };
         }
         catch (SecurityException ex)

@@ -138,6 +138,11 @@ public sealed class CompleteLoginResponse
     /// Gets or sets the provider slug used for this session.
     /// </summary>
     public string ProviderId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the ID token used as the logout hint.
+    /// </summary>
+    public string IdToken { get; set; } = string.Empty;
 }
 
 /// <summary>

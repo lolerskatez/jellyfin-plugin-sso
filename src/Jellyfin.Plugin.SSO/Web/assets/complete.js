@@ -147,7 +147,8 @@
                 localStorage.setItem('sso_session', JSON.stringify({
                     provider: provider,
                     serverId: result.ServerId,
-                    userId: user.Id || user.id
+                    userId: user.Id || user.id,
+                    idToken: result.IdToken || result.idToken || ''
                 }));
             } else {
                 localStorage.removeItem('sso_session');
@@ -213,7 +214,8 @@
                 ServerId: result.ServerId || result.serverId,
                 User: result.User || result.user,
                 ReturnUrl: result.ReturnUrl || result.returnUrl,
-                ProviderId: result.ProviderId || result.providerId
+                ProviderId: result.ProviderId || result.providerId,
+                IdToken: result.IdToken || result.idToken
             });
         }).catch(function (error) {
             showError(error.message || 'internal_error');

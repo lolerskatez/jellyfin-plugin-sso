@@ -1,5 +1,6 @@
 using Jellyfin.Plugin.SSO.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Jellyfin.Plugin.SSO.Web;
 
@@ -53,6 +54,34 @@ public static class SsoUrlBuilder
             : GetPublicBaseUrl(request, configuration);
 
         return baseUrl + "/web/index.html";
+    }
+
+    /// <summary>
+    /// Gets the provider's end-session URL.
+    /// </summary>
+    /// <remarks>
+    /// A post-logout redirect is only included with an ID token hint. Strict
+    /// providers such as Authentik reject the request as malformed when a
+    /// registered post-logout redirect URI is sent without one.
+    /// </remarks>
+    public static string GetEndSessionUrl(
+        string endSessionEndpoint,
+        string clientId,
+        string postLogoutRedirectUri,
+        string? idTokenHint)
+    {
+        var parameters = new Dictionary<string, string?>
+        {
+            ["client_id"] = clientId
+        };
+
+        if (!string.IsNullOrWhiteSpace(idTokenHint))
+        {
+            parameters["id_token_hint"] = idTokenHint;
+            parameters["post_logout_redirect_uri"] = postLogoutRedirectUri;
+        }
+
+        return QueryHelpers.AddQueryString(endSessionEndpoint, parameters);
     }
 
     /// <summary>
